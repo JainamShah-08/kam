@@ -50,28 +50,28 @@ func TestMissingFlagsBootstrapNew(t *testing.T) {
 	}{
 		{
 			"Required flags are present",
-			map[string]string{"component-name": "value-1", "application-name": "value-2", "git-repo-url": "value-3"},
+			map[string]string{"component-name": "value-1", "application-name": "value-2", "git-repo-url": "value-3", "secret": "123"},
 			nil,
 		},
 		{
 			"A required flag is absent",
-			map[string]string{"component-name": "", "application-name": "value-2", "git-repo-url": "value-3"},
+			map[string]string{"component-name": "", "application-name": "value-2", "git-repo-url": "value-3", "secret": "123"},
 			missingFlagErr([]string{`"component-name"`}),
 		},
 		{
 			"A required flag is absent",
-			map[string]string{"component-name": "value-1", "application-name": "", "git-repo-url": "value-3"},
+			map[string]string{"component-name": "value-1", "application-name": "", "git-repo-url": "value-3", "secret": "123"},
 			missingFlagErr([]string{`"application-name"`}),
 		},
 		{
 			"A required flag is absent",
-			map[string]string{"component-name": "value-1", "application-name": "value-2", "git-repo-url": ""},
+			map[string]string{"component-name": "value-1", "application-name": "value-2", "git-repo-url": "", "secret": "123"},
 			missingFlagErr([]string{`"git-repo-url"`}),
 		},
 		{
 			"Multiple required flags are absent",
-			map[string]string{"component-name": "", "application-name": "", "git-repo-url": ""},
-			missingFlagErr([]string{`"component-name"`, `"application-name"`, `"git-repo-url"`}),
+			map[string]string{"component-name": "", "application-name": "", "git-repo-url": "", "secret": ""},
+			missingFlagErr([]string{`"component-name"`, `"application-name"`, `"git-repo-url"`, `"secret"`}),
 		},
 	}
 	for _, test := range tests {
