@@ -62,7 +62,7 @@ func PathExists(appFs afero.Fs, path string) bool {
 func EnterGitSecret(repoURL string) string {
 	var gitWebhookSecret string
 	prompt := &survey.Password{
-		Message: fmt.Sprintf("Please provide a token used to authenticate requests to %s. (if not provided, it will be auto-generated)", repoURL),
+		Message: fmt.Sprintf("Please provide a token used to authenticate requests to %s", repoURL),
 		Help:    "Tokens are required to authenticate to git provider various operations on git repository (e.g. enable automated creation/push to git-repo).",
 	}
 
@@ -115,7 +115,7 @@ func SelectOptionPushToGit() bool {
 // UseDefaultValues allows users to use default values so that they will be prompted with fewer questions in interactive mode
 func UseDefaultValuesComponent() bool {
 	var defaultFlagValComponent = map[string]string{
-		"output":    "\"./gitops\"",
+		"output":    "\"./\"",
 		"namespace": "openshift-gitops",
 	}
 	flagValues := "\n\nThe default values used for the options, if not overwritten from the command line, are:\n"

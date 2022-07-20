@@ -194,14 +194,6 @@ func initiateInteractiveModeForBootstrapNewCommand(io *BootstrapNewParameters, c
 	}
 
 	outputPathOverridden := cmd.Flag("output").Changed
-	if !outputPathOverridden {
-		// Override the default path to be ./{gitops repo name}
-		repoName, err := repoFromURL(io.GitRepoURL)
-		if err != nil {
-			repoName = "gitops"
-		}
-		io.Output = filepath.Join(".", repoName)
-	}
 
 	appFs := ioutils.NewFilesystem()
 	io.Output, io.Overwrite = ui.VerifyOutput(appFs, io.Output, io.Overwrite, io.ApplicationName, outputPathOverridden, promp)
@@ -216,16 +208,7 @@ func initiateInteractiveModeForBootstrapNewCommand(io *BootstrapNewParameters, c
 
 	return nil
 }
-func repoFromURL(raw string) (string, error) {
-	u, err := url.Parse(raw)
-	if err != nil {
-		return "", err
-	}
-	parts := strings.Split(u.Path, "/")
-	return strings.TrimSuffix(parts[len(parts)-1], ".git"), nil
-}
 
-//
 func setAccessToken(io *BootstrapNewParameters) error {
 	if io.SaveTokenKeyRing {
 		err := accesstoken.SetAccessToken(io.GitRepoURL, io.Secret)
@@ -282,7 +265,7 @@ func (io *BootstrapNewParameters) Run() error {
 	return nil
 }
 
-func NewCmdComponent(name, fullName string) *cobra.Command {
+func NewCmdBootstrapNew(name, fullName string) *cobra.Command {
 	o := NewBootstrapNewParameters()
 	var componentCmd = &cobra.Command{
 		Use:     name,
@@ -294,7 +277,7 @@ func NewCmdComponent(name, fullName string) *cobra.Command {
 		},
 	}
 
-	componentCmd.Flags().StringVar(&o.Output, "output", "./gitops", "Path to write GitOps resources")
+	componentCmd.Flags().StringVar(&o.Output, "output", "./", "Path to write GitOps resources")
 	componentCmd.Flags().StringVar(&o.ComponentName, "component-name", "", "Provide a Component Name within the Application")
 	componentCmd.Flags().StringVar(&o.ApplicationName, "application-name", "", "Provide a name for your Application")
 	componentCmd.Flags().StringVar(&o.Secret, "secret", "", "Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.")

@@ -7,7 +7,7 @@ import (
 	pipelines "github.com/redhat-developer/kam/pkg/pipelines/component"
 )
 
-// Test Component Parameters
+// Test BootstrapNew Parameters
 
 func TestValidateBootstrapNewParameter(t *testing.T) {
 	optionTests := []struct {

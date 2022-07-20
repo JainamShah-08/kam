@@ -35,7 +35,7 @@ func MakeRootCmd() *cobra.Command {
 		webhook.NewCmdWebhook(webhook.RecommendedCommandName, utility.GetFullName(fullName, webhook.RecommendedCommandName)),
 		NewCmdBuild(BuildRecommendedCommandName, utility.GetFullName(fullName, BuildRecommendedCommandName)),
 		completionCmd,
-		bootstrapnew.NewCmdComponent(bootstrapnew.ComponentRecommendedCommandName, utility.GetFullName(fullName, bootstrapnew.ComponentRecommendedCommandName)),
+		bootstrapnew.NewCmdBootstrapNew(bootstrapnew.ComponentRecommendedCommandName, utility.GetFullName(fullName, bootstrapnew.ComponentRecommendedCommandName)),
 	)
 	return rootCmd
 }
