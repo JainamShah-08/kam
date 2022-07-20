@@ -28,7 +28,7 @@ kam bootstrap-new [flags]
   -h, --help                         help for bootstrap-new
       --interactive                  If true, enable prompting for most options if not already specified on the command line
       --namespace string             this is a name-space options (default "openshift-gitops")
-      --output string                Path to write GitOps resources (default "./gitops")
+      --output string                Path to write GitOps resources (default "./")
       --overwrite                    If true, it will overwrite the files
       --private-repo-driver string   If your Git repositories are on a custom domain, please indicate which driver to use github or gitlab
       --push-to-git                  Overwrites previously existing GitOps configuration (if any) on the local filesystem
