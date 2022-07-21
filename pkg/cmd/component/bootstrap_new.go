@@ -20,6 +20,7 @@ import (
 	ktemplates "k8s.io/kubectl/pkg/util/templates"
 )
 
+// checking a test branch
 const (
 	ComponentRecommendedCommandName = "bootstrap-new"
 	componentNameFlag               = "component-name"
