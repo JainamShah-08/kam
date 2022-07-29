@@ -20,7 +20,7 @@ func EnterGitRepoURL() string {
 		Help:    "The GitOps repository stores your GitOps configuration files, including your Openshift Pipelines resources for driving automated deployments and builds.  Please enter a valid git repository e.g. https://github.com/example/myorg.git",
 	}
 	err := survey.AskOne(prompt, &gitRepoURL, makeURLValidatorCheck())
-	handleError(err)
+	HandleError(err)
 	return strings.TrimSpace(gitRepoURL)
 }
 
@@ -33,12 +33,12 @@ func VerifyOutput(appFs afero.Fs, originalPath string, overwrite bool, appName s
 		Default: originalPath,
 	}
 	if !outputPathOverridden && promptForPath {
-		handleError(survey.AskOne(prompt, &outputPath, nil))
+		HandleError(survey.AskOne(prompt, &outputPath, nil))
 		outputPath = strings.TrimSpace(outputPath)
 	}
 	for {
 		exists, err := ioutils.IsExisting(appFs, filepath.Join(outputPath, appName))
-		handleError(err)
+		HandleError(err)
 		if !exists || overwrite {
 			break
 		}
@@ -46,7 +46,7 @@ func VerifyOutput(appFs afero.Fs, originalPath string, overwrite bool, appName s
 		if doOverwrite {
 			break
 		}
-		handleError(survey.AskOne(prompt, &outputPath, nil))
+		HandleError(survey.AskOne(prompt, &outputPath, nil))
 		outputPath = strings.TrimSpace(outputPath)
 	}
 	return outputPath, doOverwrite
@@ -54,7 +54,7 @@ func VerifyOutput(appFs afero.Fs, originalPath string, overwrite bool, appName s
 
 func PathExists(appFs afero.Fs, path string) bool {
 	exists, err := ioutils.IsExisting(appFs, path)
-	handleError(err)
+	HandleError(err)
 	return exists
 }
 
@@ -62,12 +62,12 @@ func PathExists(appFs afero.Fs, path string) bool {
 func EnterGitSecret(repoURL string) string {
 	var gitWebhookSecret string
 	prompt := &survey.Password{
-		Message: fmt.Sprintf("Please provide a token used to authenticate requests to %s", repoURL),
+		Message: fmt.Sprintf("Provide a token used to authenticate requests to %s", repoURL),
 		Help:    "Tokens are required to authenticate to git provider various operations on git repository (e.g. enable automated creation/push to git-repo).",
 	}
 
 	err := survey.AskOne(prompt, &gitWebhookSecret, makeSecretValidator())
-	handleError(err)
+	HandleError(err)
 	return gitWebhookSecret
 }
 
@@ -80,7 +80,7 @@ func SelectOptionOverwrite(currentPath string) bool {
 		Options: []string{"yes", "no"},
 		Default: "no",
 	}
-	handleError(survey.AskOne(prompt, &overwrite, nil))
+	HandleError(survey.AskOne(prompt, &overwrite, nil))
 	return overwrite == "yes"
 }
 
@@ -94,7 +94,7 @@ func SelectPrivateRepoDriver() string {
 	}
 
 	err := survey.AskOne(prompt, &driver, survey.Required)
-	handleError(err)
+	HandleError(err)
 	return driver
 }
 
@@ -108,7 +108,7 @@ func SelectOptionPushToGit() bool {
 		Options: []string{"yes", "no"},
 	}
 	err := survey.AskOne(prompt, &optionPushToGit, survey.Required)
-	handleError(err)
+	HandleError(err)
 	return optionPushToGit == "yes"
 }
 
@@ -135,7 +135,7 @@ func UseDefaultValuesComponent() bool {
 		Options: []string{"yes", "no"},
 		Default: "yes",
 	}
-	handleError(survey.AskOne(prompt, &useDefaults, nil))
+	HandleError(survey.AskOne(prompt, &useDefaults, nil))
 	return useDefaults == "yes"
 }
 
@@ -145,8 +145,8 @@ func AddApplicationName() string {
 		Message: "Provide the Application name ",
 		Help:    "Required Field",
 	}
-	err := survey.AskOne(prompt, &applicationName, makeNameCheck())
-	handleError(err)
+	err := survey.AskOne(prompt, &applicationName, MakeNameCheck())
+	HandleError(err)
 	return strings.TrimSpace(applicationName)
 }
 
@@ -156,12 +156,12 @@ func AddComponentName() string {
 		Message: "Provide the Component name for your application ",
 		Help:    "Required Field",
 	}
-	err := survey.AskOne(prompt, &componentName, makeNameCheck())
-	handleError(err)
+	err := survey.AskOne(prompt, &componentName, MakeNameCheck())
+	HandleError(err)
 	return strings.TrimSpace(componentName)
 }
 
-func makeNameCheck() survey.Validator {
+func MakeNameCheck() survey.Validator {
 	return func(input interface{}) error {
 		return validateName(input)
 	}
@@ -183,7 +183,7 @@ func AddTargetPort() int {
 		Message: "Provide the Target Port ",
 	}
 	err := survey.AskOne(prompt, &targetPort, makeTargetPortCheck())
-	handleError(err)
+	HandleError(err)
 	return targetPort
 }
 
@@ -213,6 +213,6 @@ func UseKeyringRingSvc() bool {
 	}
 
 	err := survey.AskOne(prompt, &optionImageRegistry, survey.Required)
-	handleError(err)
+	HandleError(err)
 	return optionImageRegistry == "yes"
 }

@@ -54,7 +54,7 @@ func validateURL(input interface{}) error {
 	return nil
 }
 
-func handleError(err error) {
+func HandleError(err error) {
 	if err == nil {
 		return
 	}

@@ -110,6 +110,16 @@ func nonInteractiveModeBootstrapNew(io *BootstrapNewParameters) error {
 	if err != nil {
 		return fmt.Errorf("%v Target Port is not valid", io.TargetPort)
 	}
+
+	err = ui.ValidateName(io.ComponentName)
+	if err != nil {
+		return fmt.Errorf("%v", err)
+	}
+	err = ui.ValidateName(io.ApplicationName)
+	if err != nil {
+		return fmt.Errorf("%v", err)
+	}
+
 	if io.PrivateRepoURLDriver != "" {
 		if !supportedDrivers.supported(io.PrivateRepoURLDriver) {
 			return fmt.Errorf("invalid driver type: %q", io.PrivateRepoURLDriver)
@@ -147,8 +157,22 @@ func initiateInteractiveModeForBootstrapNewCommand(io *BootstrapNewParameters, c
 	log.Progressf("\nStarting interactive prompt\n")
 	//Checks for mandatory flags
 	promp := !ui.UseDefaultValuesComponent()
+	if io.ApplicationName != "" {
+		err := ui.ValidateName(io.ApplicationName)
+		if err != nil {
+			log.Progressf("%v Application Name is not valid %v", io.ApplicationName, err)
+			io.ApplicationName = ui.AddApplicationName()
+		}
+	}
 	if io.ApplicationName == "" {
 		io.ApplicationName = ui.AddApplicationName()
+	}
+	if io.ComponentName != "" {
+		err := ui.ValidateName(io.ComponentName)
+		if err != nil {
+			log.Progressf("%v Component Name is not valid %v", io.ComponentName, err)
+			io.ComponentName = ui.AddComponentName()
+		}
 	}
 	if io.ComponentName == "" {
 		io.ComponentName = ui.AddComponentName()
