@@ -156,7 +156,7 @@ func missingFlagErr(flags []string) error {
 func initiateInteractiveModeForBootstrapNewCommand(io *BootstrapNewParameters, cmd *cobra.Command) error {
 	log.Progressf("\nStarting interactive prompt\n")
 	//Checks for mandatory flags
-	promp := !ui.UseDefaultValuesComponent()
+	promp := !ui.UseDefaultValues()
 	if io.ApplicationName != "" {
 		err := ui.ValidateName(io.ApplicationName)
 		if err != nil {

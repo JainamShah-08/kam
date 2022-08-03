@@ -20,7 +20,7 @@ func EnterGitRepoURL() string {
 		Help:    "The GitOps repository stores your GitOps configuration files, including your Openshift Pipelines resources for driving automated deployments and builds.  Please enter a valid git repository e.g. https://github.com/example/myorg.git",
 	}
 	err := survey.AskOne(prompt, &gitRepoURL, makeURLValidatorCheck())
-	HandleError(err)
+	handleError(err)
 	return strings.TrimSpace(gitRepoURL)
 }
 
@@ -33,12 +33,12 @@ func VerifyOutput(appFs afero.Fs, originalPath string, overwrite bool, appName s
 		Default: originalPath,
 	}
 	if !outputPathOverridden && promptForPath {
-		HandleError(survey.AskOne(prompt, &outputPath, nil))
+		handleError(survey.AskOne(prompt, &outputPath, nil))
 		outputPath = strings.TrimSpace(outputPath)
 	}
 	for {
 		exists, err := ioutils.IsExisting(appFs, filepath.Join(outputPath, appName))
-		HandleError(err)
+		handleError(err)
 		if !exists || overwrite {
 			break
 		}
@@ -46,7 +46,7 @@ func VerifyOutput(appFs afero.Fs, originalPath string, overwrite bool, appName s
 		if doOverwrite {
 			break
 		}
-		HandleError(survey.AskOne(prompt, &outputPath, nil))
+		handleError(survey.AskOne(prompt, &outputPath, nil))
 		outputPath = strings.TrimSpace(outputPath)
 	}
 	return outputPath, doOverwrite
@@ -54,7 +54,7 @@ func VerifyOutput(appFs afero.Fs, originalPath string, overwrite bool, appName s
 
 func PathExists(appFs afero.Fs, path string) bool {
 	exists, err := ioutils.IsExisting(appFs, path)
-	HandleError(err)
+	handleError(err)
 	return exists
 }
 
@@ -67,7 +67,7 @@ func EnterGitSecret(repoURL string) string {
 	}
 
 	err := survey.AskOne(prompt, &gitWebhookSecret, makeSecretValidator())
-	HandleError(err)
+	handleError(err)
 	return gitWebhookSecret
 }
 
@@ -80,7 +80,7 @@ func SelectOptionOverwrite(currentPath string) bool {
 		Options: []string{"yes", "no"},
 		Default: "no",
 	}
-	HandleError(survey.AskOne(prompt, &overwrite, nil))
+	handleError(survey.AskOne(prompt, &overwrite, nil))
 	return overwrite == "yes"
 }
 
@@ -94,7 +94,7 @@ func SelectPrivateRepoDriver() string {
 	}
 
 	err := survey.AskOne(prompt, &driver, survey.Required)
-	HandleError(err)
+	handleError(err)
 	return driver
 }
 
@@ -108,20 +108,20 @@ func SelectOptionPushToGit() bool {
 		Options: []string{"yes", "no"},
 	}
 	err := survey.AskOne(prompt, &optionPushToGit, survey.Required)
-	HandleError(err)
+	handleError(err)
 	return optionPushToGit == "yes"
 }
 
 // UseDefaultValues allows users to use default values so that they will be prompted with fewer questions in interactive mode
-func UseDefaultValuesComponent() bool {
-	var defaultFlagValComponent = map[string]string{
+func UseDefaultValues() bool {
+	var defaultFlagVal = map[string]string{
 		"output":    "\"./\"",
 		"namespace": "openshift-gitops",
 	}
 	flagValues := "\n\nThe default values used for the options, if not overwritten from the command line, are:\n"
 	buff := bytes.Buffer{}
 	w := tabwriter.NewWriter(&buff, 0, 8, 1, '\t', tabwriter.AlignRight)
-	for k, v := range defaultFlagValComponent {
+	for k, v := range defaultFlagVal {
 		fmt.Fprintf(w, "--%v\t%v\n", k, v)
 	}
 	w.Flush()
@@ -135,7 +135,7 @@ func UseDefaultValuesComponent() bool {
 		Options: []string{"yes", "no"},
 		Default: "yes",
 	}
-	HandleError(survey.AskOne(prompt, &useDefaults, nil))
+	handleError(survey.AskOne(prompt, &useDefaults, nil))
 	return useDefaults == "yes"
 }
 
@@ -146,7 +146,7 @@ func AddApplicationName() string {
 		Help:    "Required Field",
 	}
 	err := survey.AskOne(prompt, &applicationName, MakeNameCheck())
-	HandleError(err)
+	handleError(err)
 	return strings.TrimSpace(applicationName)
 }
 
@@ -157,7 +157,7 @@ func AddComponentName() string {
 		Help:    "Required Field",
 	}
 	err := survey.AskOne(prompt, &componentName, MakeNameCheck())
-	HandleError(err)
+	handleError(err)
 	return strings.TrimSpace(componentName)
 }
 
@@ -183,7 +183,7 @@ func AddTargetPort() int {
 		Message: "Provide the Target Port ",
 	}
 	err := survey.AskOne(prompt, &targetPort, makeTargetPortCheck())
-	HandleError(err)
+	handleError(err)
 	return targetPort
 }
 
@@ -213,6 +213,113 @@ func UseKeyringRingSvc() bool {
 	}
 
 	err := survey.AskOne(prompt, &optionImageRegistry, survey.Required)
-	HandleError(err)
+	handleError(err)
 	return optionImageRegistry == "yes"
+}
+
+// ----------------------------------------- UI For Component ADD/Delete Command -----------------------------------------
+
+var (
+	PathGiven    string
+	AppNameGiven string
+)
+
+func UseDefaultValuesComponent() bool {
+	var useDefaults string
+	prompt := &survey.Select{
+		Message: "Do you want to accept all default values and be prompted only for the minimum required options?",
+		Help:    "Select yes to accept default values or select no to be prompted for all options that haven't already been specified on the command line",
+		Options: []string{"yes", "no"},
+		Default: "yes",
+	}
+	handleError(survey.AskOne(prompt, &useDefaults, nil))
+	return useDefaults == "yes"
+}
+func SelectComponentNameComp() string {
+	var componentName string
+	prompt := &survey.Input{
+		Message: "Provide the Component name for your Application ",
+		Help:    "Required Field",
+	}
+	err := survey.AskOne(prompt, &componentName, validateCompNameAndPath())
+	handleError(err)
+	return strings.TrimSpace(componentName)
+}
+func validateCompNameAndPath() survey.Validator {
+	return func(input interface{}) error {
+		return validateCompNameAndPathFolder(input)
+	}
+}
+func validateCompNameAndPathFolder(input interface{}) error {
+	if u, ok := input.(string); ok {
+		err := ValidateName(u)
+		if err != nil {
+			return err
+		}
+		handleError(err)
+		exists, anyErr := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(PathGiven, AppNameGiven, "components", u))
+		if exists {
+			return fmt.Errorf("the Component : %s already exists in Application : %s at Path %s", u, AppNameGiven, PathGiven)
+		}
+		handleError(anyErr)
+	}
+	return nil
+}
+func SelectApplicationNameComp() string {
+	var applicationName string
+	prompt := &survey.Input{
+		Message: "Provide the Application name to add a Component",
+		Help:    "Required Field",
+	}
+	err := survey.AskOne(prompt, &applicationName, validateNameAndPath())
+	handleError(err)
+	return strings.TrimSpace(applicationName)
+}
+
+func validateNameAndPath() survey.Validator {
+	return func(input interface{}) error {
+		return validateNameAndPathFolder(input)
+	}
+}
+func validateNameAndPathFolder(input interface{}) error {
+	if u, ok := input.(string); ok {
+		err := ValidateName(u)
+		if err != nil {
+			return err
+		}
+		handleError(err)
+		exists, anyErr := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(PathGiven, u))
+		if !exists {
+			return fmt.Errorf("the given Application : %s doesn't exists in the Path : %s", u, PathGiven)
+		}
+		handleError(anyErr)
+	}
+	return nil
+}
+func AddOutputPath() string {
+	var path string
+	prompt := &survey.Input{
+		Message: "Provide a Path to write where the Application is present",
+		Help:    "This is the path where the GitOps repository configuration is stored locally before you push it to the repository GitRepoURL",
+	}
+	err := survey.AskOne(prompt, &path, validateOutputFolder())
+	handleError(err)
+	return strings.TrimSpace(path)
+}
+
+func validateOutputFolder() survey.Validator {
+	return func(input interface{}) error {
+		return validateOutput(input)
+	}
+}
+
+func validateOutput(input interface{}) error {
+	if u, ok := input.(string); ok {
+		exists, err := ioutils.IsExisting(ioutils.NewFilesystem(), u)
+		if !exists {
+			return fmt.Errorf("the given Path : %s doesn't exists in your directory", u)
+		}
+		handleError(err)
+	}
+	return nil
 }

@@ -11,28 +11,23 @@ func TestMissingFlagsComponent(t *testing.T) {
 	}{
 		{
 			"Required flags are present",
-			map[string]string{"component-name": "value-1", "application-name": "value-2", "output": "value-3"},
+			map[string]string{"component-name": "value-1", "application-name": "value-2"},
 			nil,
 		},
 		{
 			"A required flag is absent",
-			map[string]string{"component-name": "", "application-name": "value-2", "output": "value-3"},
+			map[string]string{"component-name": "", "application-name": "value-2"},
 			missingFlagErr([]string{`"component-name"`}),
 		},
 		{
 			"A required flag is absent",
-			map[string]string{"component-name": "value-1", "application-name": "", "output": "value-3"},
+			map[string]string{"component-name": "value-1", "application-name": ""},
 			missingFlagErr([]string{`"application-name"`}),
 		},
 		{
-			"A required flag is absent",
-			map[string]string{"component-name": "value-1", "application-name": "value-2", "output": ""},
-			missingFlagErr([]string{`"output"`}),
-		},
-		{
 			"Multiple required flags are absent",
-			map[string]string{"component-name": "", "application-name": "", "output": ""},
-			missingFlagErr([]string{`"component-name"`, `"output"`, `"application-name"`}),
+			map[string]string{"component-name": "", "application-name": ""},
+			missingFlagErr([]string{`"component-name"`, `"application-name"`}),
 		},
 	}
 	for _, test := range tests {

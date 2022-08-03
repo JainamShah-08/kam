@@ -26,7 +26,7 @@ kam component add [flags]
       --component-name string     Name of the component
   -h, --help                      help for add
       --interactive               If true, enable prompting for most options if not already specified on the command line
-      --output string             Folder path to the Application to add the component
+      --output string             Folder path to the Application to add the Component (default "./")
 ```
 
 ### SEE ALSO
