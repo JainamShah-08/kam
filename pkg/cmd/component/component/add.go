@@ -113,7 +113,7 @@ func initiateInteractiveModeComponent(io *AddCompParameters, cmd *cobra.Command)
 		io.OutputFolder = ui.AddOutputPath()
 	}
 	if io.OutputFolder != "" {
-		// Check for the path wether it is valid or not
+		// Check for the path whether it is valid or not
 		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), io.OutputFolder)
 
 		if !exists {
