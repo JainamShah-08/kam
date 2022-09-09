@@ -11,26 +11,8 @@ import (
 	"github.com/spf13/afero"
 )
 
-// // ComponentOptions is a struct that provides the optional flags
-type BootstrapNewOptions struct {
-	Output               string //
-	ComponentName        string //
-	ApplicationName      string //
-	Secret               string //
-	GitRepoURL           string //
-	NameSpace            string //
-	TargetPort           int    //
-	PushToGit            bool   // If true, gitops repository is pushed to remote git repository.
-	Route                string
-	Overwrite            bool //
-	SaveTokenKeyRing     bool
-	PrivateRepoURLDriver string //
-}
-
-// Checking if
-
 // function to populate the GitSource struct
-func BootstrapNew(o *BootstrapNewOptions, appFs afero.Fs) error {
+func BootstrapNew(o *GeneratorOptions, appFs afero.Fs) error {
 
 	componentSpec := v1alpha1.ComponentSpec{
 		Application:   o.ApplicationName,

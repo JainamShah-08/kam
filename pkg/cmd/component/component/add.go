@@ -10,6 +10,7 @@ import (
 
 	"github.com/redhat-developer/kam/pkg/cmd/component/cmd/ui"
 	"github.com/redhat-developer/kam/pkg/cmd/genericclioptions"
+	hpipelines "github.com/redhat-developer/kam/pkg/pipelines/component"
 	pipelines "github.com/redhat-developer/kam/pkg/pipelines/component/component"
 	"github.com/redhat-developer/kam/pkg/pipelines/ioutils"
 	"github.com/spf13/cobra"
@@ -23,7 +24,7 @@ const (
 
 // AddCompParameters encapsulates the parameters for the kam pipelines init command.
 type AddCompParameters struct {
-	*pipelines.CompomemtParameters
+	*hpipelines.GeneratorOptions
 	Interactive bool
 }
 
@@ -85,21 +86,21 @@ func initiateNonInteractiveModeComponent(io *AddCompParameters) error {
 	if err != nil {
 		return err
 	}
-	if io.OutputFolder == "./" {
+	if io.Output == "./" {
 		path, _ := os.Getwd()
-		io.OutputFolder = path
+		io.Output = path
 	}
-	exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), io.OutputFolder)
+	exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), io.Output)
 	if !exists {
-		return fmt.Errorf("the given Path : %s  doesn't exists ", io.OutputFolder)
+		return fmt.Errorf("the given Path : %s  doesn't exists ", io.Output)
 	}
-	exists, _ = ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.OutputFolder, io.ApplicationName))
+	exists, _ = ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName))
 	if !exists {
-		return fmt.Errorf("the given Application: %s  doesn't exists in the Path: %s", io.ApplicationName, io.OutputFolder)
+		return fmt.Errorf("the given Application: %s  doesn't exists in the Path: %s", io.ApplicationName, io.Output)
 	}
-	exists, _ = ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.OutputFolder, io.ApplicationName, "components", io.ComponentName))
+	exists, _ = ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
 	if exists {
-		return fmt.Errorf("the Component : %s  already exists in Path %s", io.ComponentName, filepath.Join(io.OutputFolder, io.ApplicationName, "components", io.ComponentName))
+		return fmt.Errorf("the Component : %s  already exists in Path %s", io.ComponentName, filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
 	}
 
 	return nil
@@ -110,36 +111,35 @@ func initiateInteractiveModeComponent(io *AddCompParameters, cmd *cobra.Command)
 	promp := !ui.UseDefaultValuesComponent()
 	if promp || cmd.Flag("output").Changed {
 		// ask for output folder
-		io.OutputFolder = ui.AddOutputPath()
+		io.Output = ui.AddOutputPath()
 	}
-	if io.OutputFolder != "" {
+	if io.Output != "" {
 		// Check for the path whether it is valid or not
-		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), io.OutputFolder)
+		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), io.Output)
 
 		if !exists {
-			log.Progressf("the provided Path doesn't exists in you directory : %s", io.OutputFolder)
-			io.OutputFolder = ui.AddOutputPath()
+			log.Progressf("the provided Path doesn't exists in you directory : %s", io.Output)
+			io.Output = ui.AddOutputPath()
 			// ask for output folder
 		}
 	}
-	if io.OutputFolder == "./" {
+	if io.Output == "./" || io.Output == "." {
 		path, _ := os.Getwd()
-		io.OutputFolder = path
+		io.Output = path
 	}
-	ui.PathGiven = io.OutputFolder
+	ui.PathGiven = io.Output
 	if io.ApplicationName != "" {
 		err := ui.ValidateName(io.ApplicationName)
 		if err != nil {
 			log.Progressf("%v", err)
 			io.ApplicationName = ui.SelectApplicationNameComp()
 		}
-		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.OutputFolder, io.ApplicationName))
+		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName))
 		if !exists {
-			log.Progressf("the Application : %s doesn't exists in Path %s", io.ApplicationName, io.OutputFolder)
+			log.Progressf("the Application : %s doesn't exists in Path %s", io.ApplicationName, io.Output)
 			io.ApplicationName = ui.SelectApplicationNameComp()
 		}
-	}
-	if io.ApplicationName == "" {
+	} else {
 		io.ApplicationName = ui.SelectApplicationNameComp()
 	}
 	ui.AppNameGiven = io.ApplicationName
@@ -150,13 +150,12 @@ func initiateInteractiveModeComponent(io *AddCompParameters, cmd *cobra.Command)
 			log.Progressf("%v", err)
 			io.ComponentName = ui.SelectComponentNameComp()
 		}
-		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.OutputFolder, io.ApplicationName, "components", io.ComponentName))
+		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
 		if exists {
-			log.Progressf("the component :%s already exists in Application : %s at %s ", io.ComponentName, io.ApplicationName, io.OutputFolder)
+			log.Progressf("the component :%s already exists in Application : %s at %s ", io.ComponentName, io.ApplicationName, io.Output)
 			io.ComponentName = ui.SelectComponentNameComp()
 		}
-	}
-	if io.ComponentName == "" {
+	} else {
 		io.ComponentName = ui.SelectComponentNameComp()
 	}
 	return nil
@@ -172,12 +171,12 @@ func (io *AddCompParameters) Run() error {
 	log.Progressf("\nAdding the new component to the Application\n")
 	appFs := ioutils.NewFilesystem()
 
-	err := pipelines.AddComponent(io.CompomemtParameters, appFs)
+	err := pipelines.AddComponent(io.GeneratorOptions, appFs)
 	if err != nil {
 		return err
 	}
 	if err == nil {
-		log.Successf("Created Component : %s in Application : %s at %s", io.ComponentName, io.ApplicationName, io.OutputFolder)
+		log.Successf("Created Component : %s in Application : %s at %s", io.ComponentName, io.ApplicationName, io.Output)
 	}
 	nextSteps()
 	return nil
@@ -186,7 +185,7 @@ func (io *AddCompParameters) Run() error {
 // NewAddCompParameters bootstraps a AddCompParameters instance.
 func NewAddCompParameters() *AddCompParameters {
 	return &AddCompParameters{
-		CompomemtParameters: &pipelines.CompomemtParameters{},
+		GeneratorOptions: &hpipelines.GeneratorOptions{},
 	}
 }
 func NewCmdAddComp(name, fullName string) *cobra.Command {
@@ -203,7 +202,7 @@ func NewCmdAddComp(name, fullName string) *cobra.Command {
 	}
 	addCompCmd.Flags().StringVar(&o.ComponentName, "component-name", "", "Name of the component")
 	addCompCmd.Flags().BoolVar(&o.Interactive, "interactive", false, "If true, enable prompting for most options if not already specified on the command line")
-	addCompCmd.Flags().StringVar(&o.OutputFolder, "output", "./", "Folder path to the Application to add the Component")
+	addCompCmd.Flags().StringVar(&o.Output, "output", "./", "Folder path to the Application to add the Component")
 	addCompCmd.Flags().StringVar(&o.ApplicationName, "application-name", "", "Name of the Application to add a Component")
 	return addCompCmd
 }

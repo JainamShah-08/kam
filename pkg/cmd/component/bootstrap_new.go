@@ -43,7 +43,7 @@ var (
 
 // BootstrapNewParameters encapsulates the parameters for the kam pipelines init command.
 type BootstrapNewParameters struct {
-	*pipelines.BootstrapNewOptions
+	*pipelines.GeneratorOptions
 	Interactive bool
 }
 
@@ -68,7 +68,7 @@ func (d drivers) supported(s string) bool {
 // NewBootstrapNewParameters bootsraps a Bootstrap Parameters instance.
 func NewBootstrapNewParameters() *BootstrapNewParameters {
 	return &BootstrapNewParameters{
-		BootstrapNewOptions: &pipelines.BootstrapNewOptions{},
+		GeneratorOptions: &pipelines.GeneratorOptions{},
 	}
 }
 
@@ -279,7 +279,7 @@ func (io *BootstrapNewParameters) Validate() error {
 func (io *BootstrapNewParameters) Run() error {
 	log.Progressf("\nCompleting Bootstrap process\n")
 	appFs := ioutils.NewFilesystem()
-	err := pipelines.BootstrapNew(io.BootstrapNewOptions, appFs)
+	err := pipelines.BootstrapNew(io.GeneratorOptions, appFs)
 	if err != nil {
 		return err
 	}
