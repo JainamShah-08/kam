@@ -23,7 +23,7 @@ func TestValidateBootstrapNewParameter(t *testing.T) {
 	}
 	for _, tt := range optionTests {
 		o := BootstrapNewParameters{
-			BootstrapNewOptions: &pipelines.BootstrapNewOptions{
+			GeneratorOptions: &pipelines.GeneratorOptions{
 				GitRepoURL:           tt.gitRepo,
 				PrivateRepoURLDriver: tt.driver,
 			},

@@ -18,6 +18,7 @@ GitOps Application Manager (KAM) is a CLI tool to scaffold your GitOps repositor
 * [kam bootstrap-new](kam_bootstrap-new.md)	 - New Bootstrap Command Application Configuration
 * [kam build](kam_build.md)	 - Build pipelines files
 * [kam completion](kam_completion.md)	 - Generates shell completion script.
+* [kam component](kam_component.md)	 - Manage component in application
 * [kam environment](kam_environment.md)	 - Manage an environment in GitOps
 * [kam service](kam_service.md)	 - Manage services in an environment
 * [kam version](kam_version.md)	 - Print the version information

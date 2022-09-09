@@ -20,6 +20,7 @@ import (
 	ktemplates "k8s.io/kubectl/pkg/util/templates"
 )
 
+//testing changes
 const (
 	ComponentRecommendedCommandName = "bootstrap-new"
 	componentNameFlag               = "component-name"
@@ -42,7 +43,7 @@ var (
 
 // BootstrapNewParameters encapsulates the parameters for the kam pipelines init command.
 type BootstrapNewParameters struct {
-	*pipelines.BootstrapNewOptions
+	*pipelines.GeneratorOptions
 	Interactive bool
 }
 
@@ -67,7 +68,7 @@ func (d drivers) supported(s string) bool {
 // NewBootstrapNewParameters bootsraps a Bootstrap Parameters instance.
 func NewBootstrapNewParameters() *BootstrapNewParameters {
 	return &BootstrapNewParameters{
-		BootstrapNewOptions: &pipelines.BootstrapNewOptions{},
+		GeneratorOptions: &pipelines.GeneratorOptions{},
 	}
 }
 
@@ -109,6 +110,16 @@ func nonInteractiveModeBootstrapNew(io *BootstrapNewParameters) error {
 	if err != nil {
 		return fmt.Errorf("%v Target Port is not valid", io.TargetPort)
 	}
+
+	err = ui.ValidateName(io.ComponentName)
+	if err != nil {
+		return fmt.Errorf("%v", err)
+	}
+	err = ui.ValidateName(io.ApplicationName)
+	if err != nil {
+		return fmt.Errorf("%v", err)
+	}
+
 	if io.PrivateRepoURLDriver != "" {
 		if !supportedDrivers.supported(io.PrivateRepoURLDriver) {
 			return fmt.Errorf("invalid driver type: %q", io.PrivateRepoURLDriver)
@@ -145,9 +156,23 @@ func missingFlagErr(flags []string) error {
 func initiateInteractiveModeForBootstrapNewCommand(io *BootstrapNewParameters, cmd *cobra.Command) error {
 	log.Progressf("\nStarting interactive prompt\n")
 	//Checks for mandatory flags
-	promp := !ui.UseDefaultValuesComponent()
+	promp := !ui.UseDefaultValues()
+	if io.ApplicationName != "" {
+		err := ui.ValidateName(io.ApplicationName)
+		if err != nil {
+			log.Progressf("%v Application Name is not valid %v", io.ApplicationName, err)
+			io.ApplicationName = ui.AddApplicationName()
+		}
+	}
 	if io.ApplicationName == "" {
 		io.ApplicationName = ui.AddApplicationName()
+	}
+	if io.ComponentName != "" {
+		err := ui.ValidateName(io.ComponentName)
+		if err != nil {
+			log.Progressf("%v Component Name is not valid %v", io.ComponentName, err)
+			io.ComponentName = ui.AddComponentName()
+		}
 	}
 	if io.ComponentName == "" {
 		io.ComponentName = ui.AddComponentName()
@@ -254,7 +279,7 @@ func (io *BootstrapNewParameters) Validate() error {
 func (io *BootstrapNewParameters) Run() error {
 	log.Progressf("\nCompleting Bootstrap process\n")
 	appFs := ioutils.NewFilesystem()
-	err := pipelines.BootstrapNew(io.BootstrapNewOptions, appFs)
+	err := pipelines.BootstrapNew(io.GeneratorOptions, appFs)
 	if err != nil {
 		return err
 	}
