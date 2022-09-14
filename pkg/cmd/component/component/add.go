@@ -108,10 +108,12 @@ func initiateNonInteractiveModeComponent(io *AddCompParameters) error {
 
 func initiateInteractiveModeComponent(io *AddCompParameters, cmd *cobra.Command) error {
 	log.Progressf("\nStarting interactive prompt\n")
-	promp := !ui.UseDefaultValuesComponent()
-	if promp || cmd.Flag("output").Changed {
-		// ask for output folder
-		io.Output = ui.AddOutputPath()
+	if io.Output == "./" {
+		promp := !ui.UseDefaultValuesComponent()
+		if promp {
+			// ask for output folder
+			io.Output = ui.ComponentOutputPath()
+		}
 	}
 	if io.Output != "" {
 		// Check for the path whether it is valid or not
@@ -119,7 +121,7 @@ func initiateInteractiveModeComponent(io *AddCompParameters, cmd *cobra.Command)
 
 		if !exists {
 			log.Progressf("the provided Path doesn't exists in you directory : %s", io.Output)
-			io.Output = ui.AddOutputPath()
+			io.Output = ui.ComponentOutputPath()
 			// ask for output folder
 		}
 	}

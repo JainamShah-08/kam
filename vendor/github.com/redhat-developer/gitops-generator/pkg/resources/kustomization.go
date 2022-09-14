@@ -17,7 +17,9 @@
 
 package resources
 
-import "sort"
+import (
+	"sort"
+)
 
 // Kustomization is a structural representation of the Kustomize file format.
 type Kustomization struct {
@@ -25,6 +27,7 @@ type Kustomization struct {
 	Kind         string            `json:"kind,omitempty"`
 	Resources    []string          `json:"resources,omitempty"`
 	Bases        []string          `json:"bases,omitempty"`
+	Patches      []string          `json:"patches,omitempty"`
 	CommonLabels map[string]string `json:"commonLabels,omitempty"`
 }
 
@@ -34,6 +37,10 @@ func (k *Kustomization) AddResources(s ...string) {
 
 func (k *Kustomization) AddBases(s ...string) {
 	k.Bases = removeDuplicatesAndSort(append(k.Bases, s...))
+}
+
+func (k *Kustomization) AddPatches(s ...string) {
+	k.Patches = removeDuplicatesAndSort(append(k.Patches, s...))
 }
 
 func removeDuplicatesAndSort(s []string) []string {
@@ -47,4 +54,22 @@ func removeDuplicatesAndSort(s []string) []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+func (k *Kustomization) CompareDifferenceAndAddCustomPatches(original []string, generated []string) {
+	newPatchesList := original
+	newGeneratedFiles := []string{}
+	originalPatches := make(map[string]bool)
+	for _, originalElement := range original {
+		originalPatches[originalElement] = true
+	}
+	for _, generatedElement := range generated {
+		if _, ok := originalPatches[generatedElement]; !ok {
+			// preserve the newGeneratedFiles order
+			newGeneratedFiles = append(newGeneratedFiles, generatedElement)
+		}
+	}
+	// new generated files should add to the top of the patch list
+	newPatchesList = append(newGeneratedFiles, newPatchesList...)
+	k.Patches = newPatchesList
 }

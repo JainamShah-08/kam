@@ -3,6 +3,8 @@ package ui
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"path/filepath"
 	"strings"
 	"text/tabwriter"
@@ -245,6 +247,33 @@ func SelectComponentNameComp() string {
 	handleError(err)
 	return strings.TrimSpace(componentName)
 }
+
+// temperoray
+func SelectComponentNameDelete(path string) string {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var directory []string
+	for _, f := range files {
+		err = validateName(f.Name())
+		if err == nil {
+			directory = append(directory, f.Name())
+		}
+	}
+	var componentName string
+	prompt := &survey.Select{
+		Message: "Provide the Component name for your Application ",
+		Help:    "Required Field",
+		Options: directory,
+	}
+	// err = survey.AskOne(prompt, &componentName, validateCompNameAndPath())
+	// handleError(err)
+	handleError(survey.AskOne(prompt, &componentName, nil))
+	return strings.TrimSpace(componentName)
+}
+
+//exit
 func validateCompNameAndPath() survey.Validator {
 	return func(input interface{}) error {
 		return validateCompNameAndPathFolder(input)
@@ -268,7 +297,7 @@ func validateCompNameAndPathFolder(input interface{}) error {
 func SelectApplicationNameComp() string {
 	var applicationName string
 	prompt := &survey.Input{
-		Message: "Provide the Application name to add a Component",
+		Message: "Provide the Application name to add/delete a Component",
 		Help:    "Required Field",
 	}
 	err := survey.AskOne(prompt, &applicationName, validateNameAndPath())
@@ -296,7 +325,7 @@ func validateNameAndPathFolder(input interface{}) error {
 	}
 	return nil
 }
-func AddOutputPath() string {
+func ComponentOutputPath() string {
 	var path string
 	prompt := &survey.Input{
 		Message: "Provide a Path to write where the Application is present",

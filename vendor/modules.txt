@@ -328,7 +328,7 @@ github.com/prometheus/procfs/internal/util
 ## explicit; go 1.13
 github.com/prometheus/statsd_exporter/pkg/mapper
 github.com/prometheus/statsd_exporter/pkg/mapper/fsm
-# github.com/redhat-developer/gitops-generator v0.0.0-20220714174531-93f4462bc987
+# github.com/redhat-developer/gitops-generator v0.0.0-20220907195418-404b4768d148
 ## explicit; go 1.18
 github.com/redhat-developer/gitops-generator/api/v1alpha1
 github.com/redhat-developer/gitops-generator/pkg
