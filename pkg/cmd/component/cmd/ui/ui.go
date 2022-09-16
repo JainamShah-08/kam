@@ -218,6 +218,17 @@ func UseKeyringRingSvc() bool {
 	handleError(err)
 	return optionImageRegistry == "yes"
 }
+func SelectRoute() string {
+	var optionRoute string
+	prompt := &survey.Input{
+		Message: "Provide a route name for your application ?",
+		Help:    "If you specify the route flag and pass the string, that string will be in the route.yaml that is generated",
+	}
+
+	err := survey.AskOne(prompt, &optionRoute, nil)
+	handleError(err)
+	return strings.TrimSpace(optionRoute)
+}
 
 // ----------------------------------------- UI For Component ADD/Delete Command -----------------------------------------
 

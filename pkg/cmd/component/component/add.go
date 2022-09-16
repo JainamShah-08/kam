@@ -108,12 +108,9 @@ func initiateNonInteractiveModeComponent(io *AddCompParameters) error {
 
 func initiateInteractiveModeComponent(io *AddCompParameters, cmd *cobra.Command) error {
 	log.Progressf("\nStarting interactive prompt\n")
-	if io.Output == "./" {
-		promp := !ui.UseDefaultValuesComponent()
-		if promp {
-			// ask for output folder
-			io.Output = ui.ComponentOutputPath()
-		}
+	promp := !ui.UseDefaultValuesComponent()
+	if !cmd.Flag("output").Changed && promp {
+		io.Output = ui.ComponentOutputPath()
 	}
 	if io.Output != "" {
 		// Check for the path whether it is valid or not
@@ -159,6 +156,12 @@ func initiateInteractiveModeComponent(io *AddCompParameters, cmd *cobra.Command)
 		}
 	} else {
 		io.ComponentName = ui.SelectComponentNameComp()
+	}
+	if !cmd.Flag("target-port").Changed && promp {
+		io.TargetPort = ui.AddTargetPort()
+	}
+	if !cmd.Flag("route").Changed && promp {
+		io.Route = ui.SelectRoute()
 	}
 	return nil
 }
@@ -206,6 +209,8 @@ func NewCmdAddComp(name, fullName string) *cobra.Command {
 	addCompCmd.Flags().BoolVar(&o.Interactive, "interactive", false, "If true, enable prompting for most options if not already specified on the command line")
 	addCompCmd.Flags().StringVar(&o.Output, "output", "./", "Folder path to the Application to add the Component")
 	addCompCmd.Flags().StringVar(&o.ApplicationName, "application-name", "", "Name of the Application to add a Component")
+	addCompCmd.Flags().IntVar(&o.TargetPort, "target-port", 8080, "Provide the Target Port for your Application")
+	addCompCmd.Flags().StringVar(&o.Route, "route", "", "If you specify the route flag and pass the string, that string will be in the route.yaml that is generated")
 	return addCompCmd
 }
 func nextSteps() {

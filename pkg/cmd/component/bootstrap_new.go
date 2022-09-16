@@ -210,10 +210,12 @@ func initiateInteractiveModeForBootstrapNewCommand(io *BootstrapNewParameters, c
 	}
 
 	//Optional flags
-	if promp {
+	if !cmd.Flag("target-port").Changed && promp {
 		io.TargetPort = ui.AddTargetPort()
 	}
-
+	if !cmd.Flag("route").Changed && promp {
+		io.Route = ui.SelectRoute()
+	}
 	if !cmd.Flag("push-to-git").Changed && promp {
 		io.PushToGit = ui.SelectOptionPushToGit()
 	}
