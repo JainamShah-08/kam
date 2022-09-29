@@ -183,6 +183,7 @@ func AddTargetPort() int {
 	var targetPort int
 	prompt := &survey.Input{
 		Message: "Provide the Target Port ",
+		Help:    "",
 	}
 	err := survey.AskOne(prompt, &targetPort, makeTargetPortCheck())
 	handleError(err)
@@ -259,8 +260,7 @@ func SelectComponentNameComp() string {
 	return strings.TrimSpace(componentName)
 }
 
-// temperoray
-func SelectComponentNameDelete(path string) string {
+func NumberOfComponents(path string) []string {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		log.Fatal(err)
@@ -272,14 +272,16 @@ func SelectComponentNameDelete(path string) string {
 			directory = append(directory, f.Name())
 		}
 	}
+	return directory
+}
+func SelectComponentNameDelete(path string) string {
+	directory := NumberOfComponents(path)
 	var componentName string
 	prompt := &survey.Select{
-		Message: "Provide the Component name for your Application ",
+		Message: "Select the Component name for your Application ",
 		Help:    "Required Field",
 		Options: directory,
 	}
-	// err = survey.AskOne(prompt, &componentName, validateCompNameAndPath())
-	// handleError(err)
 	handleError(survey.AskOne(prompt, &componentName, nil))
 	return strings.TrimSpace(componentName)
 }
@@ -305,10 +307,10 @@ func validateCompNameAndPathFolder(input interface{}) error {
 	}
 	return nil
 }
-func SelectApplicationNameComp() string {
+func SelectApplicationNameComp(command string) string {
 	var applicationName string
 	prompt := &survey.Input{
-		Message: "Provide the Application name to add/delete a Component",
+		Message: "Provide the Application name to " + command + " a Component",
 		Help:    "Required Field",
 	}
 	err := survey.AskOne(prompt, &applicationName, validateNameAndPath())

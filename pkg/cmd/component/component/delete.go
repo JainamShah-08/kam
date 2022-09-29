@@ -69,6 +69,10 @@ func initiateNonInteractiveModeDeleteComponent(io *DeleteCompParameters) error {
 	if !exists {
 		return fmt.Errorf("the given Application: %s doesn't exists in the Path: %s", io.ApplicationName, io.Output)
 	}
+	presentComponents := ui.NumberOfComponents(filepath.Join(io.Output, io.ApplicationName, "components"))
+	if len(presentComponents) == 0 {
+		return fmt.Errorf("there are no components in the %s application in folder: %s ", io.ApplicationName, io.Output)
+	}
 	exists, _ = ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
 	if !exists {
 		return fmt.Errorf("the Component : %s does not exists in Path %s", io.ComponentName, filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
@@ -102,32 +106,37 @@ func initiateInteractiveModeDeleteComponent(io *DeleteCompParameters, cmd *cobra
 		err := ui.ValidateName(io.ApplicationName)
 		if err != nil {
 			log.Progressf("%v", err)
-			io.ApplicationName = ui.SelectApplicationNameComp()
+			io.ApplicationName = ui.SelectApplicationNameComp("delete")
 		}
 		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName))
 		if !exists {
 			log.Progressf("the Application : %s doesn't exists in Path %s", io.ApplicationName, io.Output)
-			io.ApplicationName = ui.SelectApplicationNameComp()
+			io.ApplicationName = ui.SelectApplicationNameComp("delete")
 		}
 	} else {
-		io.ApplicationName = ui.SelectApplicationNameComp()
+		io.ApplicationName = ui.SelectApplicationNameComp("delete")
 	}
 	ui.AppNameGiven = io.ApplicationName
-
-	if io.ComponentName != "" {
-		err := ui.ValidateName(io.ComponentName)
-		if err != nil {
-			log.Progressf("%v", err)
-			io.ComponentName = ui.SelectComponentNameDelete(filepath.Join(io.Output, io.ApplicationName, "components"))
-		}
-		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
-		if !exists {
-			log.Errorf("the component : %s does not exists in Application : %s at %s ", io.ComponentName, io.ApplicationName, io.Output)
-			io.ComponentName = ui.SelectComponentNameDelete(filepath.Join(io.Output, io.ApplicationName, "components"))
-		}
+	presentComponents := ui.NumberOfComponents(filepath.Join(io.Output, io.ApplicationName, "components"))
+	if len(presentComponents) == 0 {
+		return fmt.Errorf("there are no components in the %s application in folder: %s ", io.ApplicationName, io.Output)
 	} else {
-		io.ComponentName = ui.SelectComponentNameDelete(filepath.Join(io.Output, io.ApplicationName, "components"))
+		if io.ComponentName != "" {
+			err := ui.ValidateName(io.ComponentName)
+			if err != nil {
+				log.Progressf("%v", err)
+				io.ComponentName = ui.SelectComponentNameDelete(filepath.Join(io.Output, io.ApplicationName, "components"))
+			}
+			exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
+			if !exists {
+				log.Errorf("the component : %s does not exists in Application : %s at %s ", io.ComponentName, io.ApplicationName, io.Output)
+				io.ComponentName = ui.SelectComponentNameDelete(filepath.Join(io.Output, io.ApplicationName, "components"))
+			}
+		} else {
+			io.ComponentName = ui.SelectComponentNameDelete(filepath.Join(io.Output, io.ApplicationName, "components"))
+		}
 	}
+
 	return nil
 }
 

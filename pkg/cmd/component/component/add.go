@@ -131,15 +131,15 @@ func initiateInteractiveModeComponent(io *AddCompParameters, cmd *cobra.Command)
 		err := ui.ValidateName(io.ApplicationName)
 		if err != nil {
 			log.Progressf("%v", err)
-			io.ApplicationName = ui.SelectApplicationNameComp()
+			io.ApplicationName = ui.SelectApplicationNameComp("add")
 		}
 		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName))
 		if !exists {
 			log.Progressf("the Application : %s doesn't exists in Path %s", io.ApplicationName, io.Output)
-			io.ApplicationName = ui.SelectApplicationNameComp()
+			io.ApplicationName = ui.SelectApplicationNameComp("add")
 		}
 	} else {
-		io.ApplicationName = ui.SelectApplicationNameComp()
+		io.ApplicationName = ui.SelectApplicationNameComp("add")
 	}
 	ui.AppNameGiven = io.ApplicationName
 
@@ -180,6 +180,7 @@ func (io *AddCompParameters) Run() error {
 	if err != nil {
 		return err
 	}
+
 	if err == nil {
 		log.Successf("Created Component : %s in Application : %s at %s", io.ComponentName, io.ApplicationName, io.Output)
 	}
@@ -210,7 +211,7 @@ func NewCmdAddComp(name, fullName string) *cobra.Command {
 	addCompCmd.Flags().StringVar(&o.Output, "output", "./", "Folder path to the Application to add the Component")
 	addCompCmd.Flags().StringVar(&o.ApplicationName, "application-name", "", "Name of the Application to add a Component")
 	addCompCmd.Flags().IntVar(&o.TargetPort, "target-port", 8080, "Provide the Target Port for your Application")
-	addCompCmd.Flags().StringVar(&o.Route, "route", "", "If you specify the route flag and pass the string, that string will be in the route.yaml that is generated")
+	addCompCmd.Flags().StringVar(&o.Route, "route", "", "Provide the route to expose the component with. If provided, it will be referenced in the generated route.yaml")
 	return addCompCmd
 }
 func nextSteps() {

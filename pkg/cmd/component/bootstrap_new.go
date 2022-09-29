@@ -22,7 +22,7 @@ import (
 
 //testing changes
 const (
-	ComponentRecommendedCommandName = "bootstrap-new"
+	BootstrapRecommendedCommandName = "bootstrap-new"
 	componentNameFlag               = "component-name"
 	appliactionNameFlag             = "application-name"
 	gitRepoURLFlag                  = "git-repo-url"
@@ -294,7 +294,7 @@ func (io *BootstrapNewParameters) Run() error {
 
 func NewCmdBootstrapNew(name, fullName string) *cobra.Command {
 	o := NewBootstrapNewParameters()
-	var componentCmd = &cobra.Command{
+	var bootstrapCmd = &cobra.Command{
 		Use:     name,
 		Short:   bootstrapShortDescC,
 		Long:    bootstrapLongDescC,
@@ -304,20 +304,20 @@ func NewCmdBootstrapNew(name, fullName string) *cobra.Command {
 		},
 	}
 
-	componentCmd.Flags().StringVar(&o.Output, "output", "./", "Path to write GitOps resources")
-	componentCmd.Flags().StringVar(&o.ComponentName, "component-name", "", "Provide a Component Name within the Application")
-	componentCmd.Flags().StringVar(&o.ApplicationName, "application-name", "", "Provide a name for your Application")
-	componentCmd.Flags().StringVar(&o.Secret, "secret", "", "Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.")
-	componentCmd.Flags().StringVar(&o.GitRepoURL, "git-repo-url", "", "Provide the URL for your GitOps repository e.g. https://github.com/organisation/repository.git")
-	componentCmd.Flags().StringVar(&o.NameSpace, "namespace", "openshift-gitops", "this is a name-space options")
-	componentCmd.Flags().IntVar(&o.TargetPort, "target-port", 8080, "Provide the Target Port for your Application")
-	componentCmd.Flags().BoolVar(&o.PushToGit, "push-to-git", false, "Overwrites previously existing GitOps configuration (if any) on the local filesystem")
-	componentCmd.Flags().StringVar(&o.Route, "route", "", "If you specify the route flag and pass the string, that string will be in the route.yaml that is generated")
-	componentCmd.Flags().BoolVar(&o.Interactive, "interactive", false, "If true, enable prompting for most options if not already specified on the command line")
-	componentCmd.Flags().BoolVar(&o.Overwrite, "overwrite", false, "If true, it will overwrite the files")
-	componentCmd.Flags().BoolVar(&o.SaveTokenKeyRing, "save-token-keyring", false, "Explicitly pass this flag to update the git-host-access-token in the keyring on your local machine")
-	componentCmd.Flags().StringVar(&o.PrivateRepoURLDriver, "private-repo-driver", "", "If your Git repositories are on a custom domain, please indicate which driver to use github or gitlab")
-	return componentCmd
+	bootstrapCmd.Flags().StringVar(&o.Output, "output", ".", "Path to write GitOps resources")
+	bootstrapCmd.Flags().StringVar(&o.ComponentName, "component-name", "", "Provide a Component Name within the Application")
+	bootstrapCmd.Flags().StringVar(&o.ApplicationName, "application-name", "", "Provide a name for your Application")
+	bootstrapCmd.Flags().StringVar(&o.Secret, "secret", "", "Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.")
+	bootstrapCmd.Flags().StringVar(&o.GitRepoURL, "git-repo-url", "", "Provide the URL for your GitOps repository e.g. https://github.com/organisation/repository.git")
+	bootstrapCmd.Flags().StringVar(&o.NameSpace, "namespace", "openshift-gitops", "this is a name-space options")
+	bootstrapCmd.Flags().IntVar(&o.TargetPort, "target-port", 8080, "Provide the Target Port for your Application")
+	bootstrapCmd.Flags().BoolVar(&o.PushToGit, "push-to-git", false, "Overwrites previously existing GitOps configuration (if any) on the local filesystem")
+	bootstrapCmd.Flags().StringVar(&o.Route, "route", "", "Provide the route to expose the component with. If provided, it will be referenced in the generated route.yaml")
+	bootstrapCmd.Flags().BoolVar(&o.Interactive, "interactive", false, "If true, enable prompting for most options if not already specified on the command line")
+	bootstrapCmd.Flags().BoolVar(&o.Overwrite, "overwrite", false, "If true, it will overwrite the files")
+	bootstrapCmd.Flags().BoolVar(&o.SaveTokenKeyRing, "save-token-keyring", false, "Explicitly pass this flag to update the git-host-access-token in the keyring on your local machine")
+	bootstrapCmd.Flags().StringVar(&o.PrivateRepoURLDriver, "private-repo-driver", "", "If your Git repositories are on a custom domain, please indicate which driver to use github or gitlab")
+	return bootstrapCmd
 }
 
 func isKnownDriverURL(repoURL string) bool {

@@ -8,11 +8,10 @@ import (
 	"github.com/redhat-developer/gitops-generator/api/v1alpha1"
 	gitops "github.com/redhat-developer/gitops-generator/pkg"
 	pipelines "github.com/redhat-developer/kam/pkg/pipelines/component"
-	"github.com/redhat-developer/kam/pkg/pipelines/ioutils"
 	"github.com/spf13/afero"
 )
 
-func AddComponent(o *pipelines.GeneratorOptions, appFs afero.Fs) error {
+func AddComponent(o *pipelines.GeneratorOptions, appFs afero.Afero) error {
 	componentSpec := v1alpha1.ComponentSpec{
 		Application:   o.ApplicationName,
 		ComponentName: o.ComponentName,
@@ -30,15 +29,15 @@ func AddComponent(o *pipelines.GeneratorOptions, appFs afero.Fs) error {
 	BootstrapNewVal := v1alpha1.Component{
 		Spec: componentSpec,
 	}
-	anyErr := gitops.GenerateAndPush(o.Output, "", BootstrapNewVal, gitops.NewCmdExecutor(), ioutils.NewFilesystem(), "main", false, "KAM cli", nil)
+	anyErr := gitops.GenerateAndPush(o.Output, "", BootstrapNewVal, gitops.NewCmdExecutor(), appFs, "main", false, "KAM cli", nil)
 	if anyErr != nil {
 		return fmt.Errorf("failed to create the Component :%s in Application: %s: %w", o.ComponentName, o.ApplicationName, anyErr)
 	}
 	return nil
 }
 
-func DeleteComponent(o *pipelines.GeneratorOptions, appFs afero.Fs) error {
-	anyErr := removeAndPush(filepath.Join(o.Output, o.ApplicationName), "", o.ComponentName, gitops.NewCmdExecutor(), ioutils.NewFilesystem(), "main", "", false, false)
+func DeleteComponent(o *pipelines.GeneratorOptions, appFs afero.Afero) error {
+	anyErr := removeAndPush(filepath.Join(o.Output, o.ApplicationName), "", o.ComponentName, gitops.NewCmdExecutor(), appFs, "main", "", false, false)
 	if anyErr != nil {
 		return fmt.Errorf("failed to delete the Component :%s in Application: %s: %w", o.ComponentName, o.ApplicationName, anyErr)
 	}

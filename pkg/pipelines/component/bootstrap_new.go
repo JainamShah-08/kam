@@ -7,12 +7,11 @@ import (
 	"github.com/redhat-developer/gitops-generator/api/v1alpha1"
 	gitops "github.com/redhat-developer/gitops-generator/pkg"
 	"github.com/redhat-developer/kam/pkg/cmd/component/cmd/ui"
-	"github.com/redhat-developer/kam/pkg/pipelines/ioutils"
 	"github.com/spf13/afero"
 )
 
 // function to populate the GitSource struct
-func BootstrapNew(o *GeneratorOptions, appFs afero.Fs) error {
+func BootstrapNew(o *GeneratorOptions, appFs afero.Afero) error {
 
 	componentSpec := v1alpha1.ComponentSpec{
 		Application:   o.ApplicationName,
@@ -37,7 +36,7 @@ func BootstrapNew(o *GeneratorOptions, appFs afero.Fs) error {
 		return fmt.Errorf("%v the application name already exists in given directory %v", o.ApplicationName, o.Output)
 	}
 	e := gitops.NewCmdExecutor()
-	anyErr := gitops.GenerateAndPush(o.Output, o.GitRepoURL, BootstrapNewVal, e, ioutils.NewFilesystem(), "main", o.PushToGit, "KAM cli", nil)
+	anyErr := gitops.GenerateAndPush(o.Output, o.GitRepoURL, BootstrapNewVal, e, appFs, "main", o.PushToGit, "KAM cli", nil)
 	if anyErr != nil {
 		return fmt.Errorf("failed to create the gitops repository: %q: %w", o.GitRepoURL, anyErr)
 	}
