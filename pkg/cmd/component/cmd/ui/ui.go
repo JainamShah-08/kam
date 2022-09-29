@@ -183,7 +183,7 @@ func AddTargetPort() int {
 	var targetPort int
 	prompt := &survey.Input{
 		Message: "Provide the Target Port ",
-		Help:    "",
+		Help:    "Provide a target port for component",
 	}
 	err := survey.AskOne(prompt, &targetPort, makeTargetPortCheck())
 	handleError(err)

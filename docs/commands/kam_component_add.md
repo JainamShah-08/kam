@@ -28,7 +28,7 @@ kam component add [flags]
       --interactive               If true, enable prompting for most options if not already specified on the command line
       --output string             Folder path to the Application to add the Component (default "./")
       --route string              Provide the route to expose the component with. If provided, it will be referenced in the generated route.yaml
-      --target-port int           Provide the Target Port for your Application (default 8080)
+      --target-port int           Provide the Target Port for the component (default 8080)
 ```
 
 ### SEE ALSO

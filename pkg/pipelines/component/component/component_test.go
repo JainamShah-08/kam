@@ -12,7 +12,7 @@ func TestAddAndDeleteComponent(t *testing.T) {
 	fs := ioutils.NewFilesystem()
 	testPath := "/user/example1"
 
-	fakePath := []struct {
+	testOptions := []struct {
 		output          string
 		applicationName string
 		componentName   string
@@ -23,7 +23,7 @@ func TestAddAndDeleteComponent(t *testing.T) {
 		{testPath, "app2", "comp2", 8090, "route2"},
 		{testPath, "app3", "comp2", 8090, "route3"},
 	}
-	for _, tt := range fakePath {
+	for _, tt := range testOptions {
 		path := fs.GetTempDir(filepath.Join(tt.output, tt.applicationName, "components"))
 		x := len(path) - len(tt.applicationName) - len("components") - 3
 		tt.output = path[0:x]

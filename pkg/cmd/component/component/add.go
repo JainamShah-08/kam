@@ -44,6 +44,8 @@ var (
 
 	addCompLongDesc  = ktemplates.LongDesc(`Add a new Component to the Application`)
 	addCompShortDesc = `Add a new Component`
+
+	appFs = ioutils.NewFilesystem()
 )
 
 // Complete completes AddCompParameters after they've been created.
@@ -90,15 +92,15 @@ func initiateNonInteractiveModeComponent(io *AddCompParameters) error {
 		path, _ := os.Getwd()
 		io.Output = path
 	}
-	exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), io.Output)
+	exists, _ := ioutils.IsExisting(appFs, io.Output)
 	if !exists {
 		return fmt.Errorf("the given Path : %s  doesn't exists ", io.Output)
 	}
-	exists, _ = ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName))
+	exists, _ = ioutils.IsExisting(appFs, filepath.Join(io.Output, io.ApplicationName))
 	if !exists {
 		return fmt.Errorf("the given Application: %s  doesn't exists in the Path: %s", io.ApplicationName, io.Output)
 	}
-	exists, _ = ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
+	exists, _ = ioutils.IsExisting(appFs, filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
 	if exists {
 		return fmt.Errorf("the Component : %s  already exists in Path %s", io.ComponentName, filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
 	}
@@ -114,7 +116,7 @@ func initiateInteractiveModeComponent(io *AddCompParameters, cmd *cobra.Command)
 	}
 	if io.Output != "" {
 		// Check for the path whether it is valid or not
-		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), io.Output)
+		exists, _ := ioutils.IsExisting(appFs, io.Output)
 
 		if !exists {
 			log.Progressf("the provided Path doesn't exists in you directory : %s", io.Output)
@@ -133,7 +135,7 @@ func initiateInteractiveModeComponent(io *AddCompParameters, cmd *cobra.Command)
 			log.Progressf("%v", err)
 			io.ApplicationName = ui.SelectApplicationNameComp("add")
 		}
-		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName))
+		exists, _ := ioutils.IsExisting(appFs, filepath.Join(io.Output, io.ApplicationName))
 		if !exists {
 			log.Progressf("the Application : %s doesn't exists in Path %s", io.ApplicationName, io.Output)
 			io.ApplicationName = ui.SelectApplicationNameComp("add")
@@ -149,7 +151,7 @@ func initiateInteractiveModeComponent(io *AddCompParameters, cmd *cobra.Command)
 			log.Progressf("%v", err)
 			io.ComponentName = ui.SelectComponentNameComp()
 		}
-		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
+		exists, _ := ioutils.IsExisting(appFs, filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
 		if exists {
 			log.Progressf("the component :%s already exists in Application : %s at %s ", io.ComponentName, io.ApplicationName, io.Output)
 			io.ComponentName = ui.SelectComponentNameComp()
@@ -174,8 +176,6 @@ func (io *AddCompParameters) Validate() error {
 // Run runs the project bootstrap command.
 func (io *AddCompParameters) Run() error {
 	log.Progressf("\nAdding the new component to the Application\n")
-	appFs := ioutils.NewFilesystem()
-
 	err := pipelines.AddComponent(io.GeneratorOptions, appFs)
 	if err != nil {
 		return err
@@ -210,7 +210,7 @@ func NewCmdAddComp(name, fullName string) *cobra.Command {
 	addCompCmd.Flags().BoolVar(&o.Interactive, "interactive", false, "If true, enable prompting for most options if not already specified on the command line")
 	addCompCmd.Flags().StringVar(&o.Output, "output", "./", "Folder path to the Application to add the Component")
 	addCompCmd.Flags().StringVar(&o.ApplicationName, "application-name", "", "Name of the Application to add a Component")
-	addCompCmd.Flags().IntVar(&o.TargetPort, "target-port", 8080, "Provide the Target Port for your Application")
+	addCompCmd.Flags().IntVar(&o.TargetPort, "target-port", 8080, "Provide the Target Port for the component")
 	addCompCmd.Flags().StringVar(&o.Route, "route", "", "Provide the route to expose the component with. If provided, it will be referenced in the generated route.yaml")
 	return addCompCmd
 }

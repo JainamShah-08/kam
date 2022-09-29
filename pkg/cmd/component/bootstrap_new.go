@@ -310,7 +310,7 @@ func NewCmdBootstrapNew(name, fullName string) *cobra.Command {
 	bootstrapCmd.Flags().StringVar(&o.Secret, "secret", "", "Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.")
 	bootstrapCmd.Flags().StringVar(&o.GitRepoURL, "git-repo-url", "", "Provide the URL for your GitOps repository e.g. https://github.com/organisation/repository.git")
 	bootstrapCmd.Flags().StringVar(&o.NameSpace, "namespace", "openshift-gitops", "this is a name-space options")
-	bootstrapCmd.Flags().IntVar(&o.TargetPort, "target-port", 8080, "Provide the Target Port for your Application")
+	bootstrapCmd.Flags().IntVar(&o.TargetPort, "target-port", 8080, "Provide the Target Port for your application's component")
 	bootstrapCmd.Flags().BoolVar(&o.PushToGit, "push-to-git", false, "Overwrites previously existing GitOps configuration (if any) on the local filesystem")
 	bootstrapCmd.Flags().StringVar(&o.Route, "route", "", "Provide the route to expose the component with. If provided, it will be referenced in the generated route.yaml")
 	bootstrapCmd.Flags().BoolVar(&o.Interactive, "interactive", false, "If true, enable prompting for most options if not already specified on the command line")

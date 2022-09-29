@@ -34,6 +34,8 @@ var (
 
 	deleteCompLongDesc  = ktemplates.LongDesc(`Delete an existing Component from the Application`)
 	deleteCompShortDesc = `Delete an existing Component`
+
+	appFS = ioutils.NewFilesystem()
 )
 
 func (io *DeleteCompParameters) Complete(name string, cmd *cobra.Command, args []string) error {
@@ -61,11 +63,11 @@ func initiateNonInteractiveModeDeleteComponent(io *DeleteCompParameters) error {
 		path, _ := os.Getwd()
 		io.Output = path
 	}
-	exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), io.Output)
+	exists, _ := ioutils.IsExisting(appFS, io.Output)
 	if !exists {
 		return fmt.Errorf("the given Path : %s doesn't exists ", io.Output)
 	}
-	exists, _ = ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName))
+	exists, _ = ioutils.IsExisting(appFS, filepath.Join(io.Output, io.ApplicationName))
 	if !exists {
 		return fmt.Errorf("the given Application: %s doesn't exists in the Path: %s", io.ApplicationName, io.Output)
 	}
@@ -73,7 +75,7 @@ func initiateNonInteractiveModeDeleteComponent(io *DeleteCompParameters) error {
 	if len(presentComponents) == 0 {
 		return fmt.Errorf("there are no components in the %s application in folder: %s ", io.ApplicationName, io.Output)
 	}
-	exists, _ = ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
+	exists, _ = ioutils.IsExisting(appFS, filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
 	if !exists {
 		return fmt.Errorf("the Component : %s does not exists in Path %s", io.ComponentName, filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
 	}
@@ -91,7 +93,7 @@ func initiateInteractiveModeDeleteComponent(io *DeleteCompParameters, cmd *cobra
 		}
 	}
 	if io.Output != "" {
-		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), io.Output)
+		exists, _ := ioutils.IsExisting(appFs, io.Output)
 		if !exists {
 			log.Progressf("the provided Path doesn't exists in you directory : %s", io.Output)
 			io.Output = ui.ComponentOutputPath()
@@ -108,7 +110,7 @@ func initiateInteractiveModeDeleteComponent(io *DeleteCompParameters, cmd *cobra
 			log.Progressf("%v", err)
 			io.ApplicationName = ui.SelectApplicationNameComp("delete")
 		}
-		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName))
+		exists, _ := ioutils.IsExisting(appFS, filepath.Join(io.Output, io.ApplicationName))
 		if !exists {
 			log.Progressf("the Application : %s doesn't exists in Path %s", io.ApplicationName, io.Output)
 			io.ApplicationName = ui.SelectApplicationNameComp("delete")
@@ -127,7 +129,7 @@ func initiateInteractiveModeDeleteComponent(io *DeleteCompParameters, cmd *cobra
 				log.Progressf("%v", err)
 				io.ComponentName = ui.SelectComponentNameDelete(filepath.Join(io.Output, io.ApplicationName, "components"))
 			}
-			exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
+			exists, _ := ioutils.IsExisting(appFS, filepath.Join(io.Output, io.ApplicationName, "components", io.ComponentName))
 			if !exists {
 				log.Errorf("the component : %s does not exists in Application : %s at %s ", io.ComponentName, io.ApplicationName, io.Output)
 				io.ComponentName = ui.SelectComponentNameDelete(filepath.Join(io.Output, io.ApplicationName, "components"))
@@ -148,9 +150,8 @@ func (io *DeleteCompParameters) Validate() error {
 // Run runs the project component delete command command.
 func (io *DeleteCompParameters) Run() error {
 	log.Progressf("\nDeleted the component from the Application\n")
-	appFs := ioutils.NewFilesystem()
 
-	err := pipelines.DeleteComponent(io.GeneratorOptions, appFs)
+	err := pipelines.DeleteComponent(io.GeneratorOptions, appFS)
 	if err != nil {
 		return err
 	}

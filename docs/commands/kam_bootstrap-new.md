@@ -35,7 +35,7 @@ kam bootstrap-new [flags]
       --route string                 Provide the route to expose the component with. If provided, it will be referenced in the generated route.yaml
       --save-token-keyring           Explicitly pass this flag to update the git-host-access-token in the keyring on your local machine
       --secret string                Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.
-      --target-port int              Provide the Target Port for your Application (default 8080)
+      --target-port int              Provide the Target Port for your application's component (default 8080)
 ```
 
 ### SEE ALSO
