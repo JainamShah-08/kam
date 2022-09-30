@@ -28,14 +28,14 @@ kam bootstrap-new [flags]
   -h, --help                         help for bootstrap-new
       --interactive                  If true, enable prompting for most options if not already specified on the command line
       --namespace string             this is a name-space options (default "openshift-gitops")
-      --output string                Path to write GitOps resources (default "./")
+      --output string                Path to write GitOps resources (default ".")
       --overwrite                    If true, it will overwrite the files
       --private-repo-driver string   If your Git repositories are on a custom domain, please indicate which driver to use github or gitlab
       --push-to-git                  Overwrites previously existing GitOps configuration (if any) on the local filesystem
-      --route string                 If you specify the route flag and pass the string, that string will be in the route.yaml that is generated
+      --route string                 Provide the route to expose the component with. If provided, it will be referenced in the generated route.yaml
       --save-token-keyring           Explicitly pass this flag to update the git-host-access-token in the keyring on your local machine
       --secret string                Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.
-      --target-port int              Provide the Target Port for your Application (default 8080)
+      --target-port int              Provide the Target Port for your application's component (default 8080)
 ```
 
 ### SEE ALSO

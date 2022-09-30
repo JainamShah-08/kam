@@ -3,6 +3,8 @@ package ui
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"path/filepath"
 	"strings"
 	"text/tabwriter"
@@ -181,6 +183,7 @@ func AddTargetPort() int {
 	var targetPort int
 	prompt := &survey.Input{
 		Message: "Provide the Target Port ",
+		Help:    "Provide a target port for component",
 	}
 	err := survey.AskOne(prompt, &targetPort, makeTargetPortCheck())
 	handleError(err)
@@ -216,6 +219,17 @@ func UseKeyringRingSvc() bool {
 	handleError(err)
 	return optionImageRegistry == "yes"
 }
+func SelectRoute() string {
+	var optionRoute string
+	prompt := &survey.Input{
+		Message: "Provide a route name for your application ?",
+		Help:    "If you specify the route flag and pass the string, that string will be in the route.yaml that is generated",
+	}
+
+	err := survey.AskOne(prompt, &optionRoute, nil)
+	handleError(err)
+	return strings.TrimSpace(optionRoute)
+}
 
 // ----------------------------------------- UI For Component ADD/Delete Command -----------------------------------------
 
@@ -245,6 +259,34 @@ func SelectComponentNameComp() string {
 	handleError(err)
 	return strings.TrimSpace(componentName)
 }
+
+func NumberOfComponents(path string) []string {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var directory []string
+	for _, f := range files {
+		err = validateName(f.Name())
+		if err == nil {
+			directory = append(directory, f.Name())
+		}
+	}
+	return directory
+}
+func SelectComponentNameDelete(path string) string {
+	directory := NumberOfComponents(path)
+	var componentName string
+	prompt := &survey.Select{
+		Message: "Select the Component name for your Application ",
+		Help:    "Required Field",
+		Options: directory,
+	}
+	handleError(survey.AskOne(prompt, &componentName, nil))
+	return strings.TrimSpace(componentName)
+}
+
+//exit
 func validateCompNameAndPath() survey.Validator {
 	return func(input interface{}) error {
 		return validateCompNameAndPathFolder(input)
@@ -265,10 +307,10 @@ func validateCompNameAndPathFolder(input interface{}) error {
 	}
 	return nil
 }
-func SelectApplicationNameComp() string {
+func SelectApplicationNameComp(command string) string {
 	var applicationName string
 	prompt := &survey.Input{
-		Message: "Provide the Application name to add a Component",
+		Message: "Provide the Application name to " + command + " a Component",
 		Help:    "Required Field",
 	}
 	err := survey.AskOne(prompt, &applicationName, validateNameAndPath())
@@ -296,7 +338,7 @@ func validateNameAndPathFolder(input interface{}) error {
 	}
 	return nil
 }
-func AddOutputPath() string {
+func ComponentOutputPath() string {
 	var path string
 	prompt := &survey.Input{
 		Message: "Provide a Path to write where the Application is present",
