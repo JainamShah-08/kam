@@ -234,8 +234,9 @@ func SelectRoute() string {
 // ----------------------------------------- UI For Component ADD/Delete Command -----------------------------------------
 
 var (
-	PathGiven    string
-	AppNameGiven string
+	PathGiven          string
+	AppNameGiven       string
+	ComponentNameGiven string
 )
 
 func UseDefaultValuesComponent() bool {
@@ -286,12 +287,19 @@ func SelectComponentNameDelete(path string) string {
 	return strings.TrimSpace(componentName)
 }
 
-//exit
+// exit
 func validateCompNameAndPath() survey.Validator {
 	return func(input interface{}) error {
 		return validateCompNameAndPathFolder(input)
 	}
 }
+
+func validateEnvironmentNameAndPath() survey.Validator {
+	return func(input interface{}) error {
+		return validateEnvironmentNameAndPathFolder(input)
+	}
+}
+
 func validateCompNameAndPathFolder(input interface{}) error {
 	if u, ok := input.(string); ok {
 		err := ValidateName(u)
@@ -307,10 +315,28 @@ func validateCompNameAndPathFolder(input interface{}) error {
 	}
 	return nil
 }
-func SelectApplicationNameComp(command string) string {
+
+func validateEnvironmentNameAndPathFolder(input interface{}) error {
+	if u, ok := input.(string); ok {
+		err := ValidateName(u)
+		if err != nil {
+			return err
+		}
+		handleError(err)
+		fullPath := filepath.Join(PathGiven, AppNameGiven, "components", ComponentNameGiven, "overlays", u)
+		exists, anyErr := ioutils.IsExisting(ioutils.NewFilesystem(), fullPath)
+		if exists {
+			return fmt.Errorf("the %s environment already exists in the %s component. See path %s", u, ComponentNameGiven, fullPath)
+		}
+		handleError(anyErr)
+	}
+	return nil
+}
+
+func SelectApplicationNameComp(message string) string {
 	var applicationName string
 	prompt := &survey.Input{
-		Message: "Provide the Application name to " + command + " a Component",
+		Message: message,
 		Help:    "Required Field",
 	}
 	err := survey.AskOne(prompt, &applicationName, validateNameAndPath())
@@ -341,7 +367,7 @@ func validateNameAndPathFolder(input interface{}) error {
 func ComponentOutputPath() string {
 	var path string
 	prompt := &survey.Input{
-		Message: "Provide a Path to write where the Application is present",
+		Message: "Provide a Path to to where the Application is located",
 		Help:    "This is the path where the GitOps repository configuration is stored locally before you push it to the repository GitRepoURL",
 	}
 	err := survey.AskOne(prompt, &path, validateOutputFolder())
@@ -364,4 +390,16 @@ func validateOutput(input interface{}) error {
 		handleError(err)
 	}
 	return nil
+}
+
+func AddEnvironmentName() string {
+	var environmentName string
+	prompt := &survey.Input{
+		Message: "Provide the environment name to add to your application ",
+		Help:    "Required Field",
+	}
+	err := survey.AskOne(prompt, &environmentName, validateEnvironmentNameAndPath())
+	//err := survey.AskOne(prompt, &environmentName, MakeNameCheck())
+	handleError(err)
+	return strings.TrimSpace(environmentName)
 }

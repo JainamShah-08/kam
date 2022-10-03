@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	DeleteCompRecommendedCommandName = "delete"
+	DeleteCompRecommendedCommandName      = "delete"
+	ApplicationNameDeleteComponentMessage = "Provide the Application name for which to delete a component"
 )
 
 type DeleteCompParameters struct {
@@ -108,15 +109,15 @@ func initiateInteractiveModeDeleteComponent(io *DeleteCompParameters, cmd *cobra
 		err := ui.ValidateName(io.ApplicationName)
 		if err != nil {
 			log.Progressf("%v", err)
-			io.ApplicationName = ui.SelectApplicationNameComp("delete")
+			io.ApplicationName = ui.SelectApplicationNameComp(ApplicationNameDeleteComponentMessage)
 		}
 		exists, _ := ioutils.IsExisting(appFS, filepath.Join(io.Output, io.ApplicationName))
 		if !exists {
 			log.Progressf("the Application : %s doesn't exists in Path %s", io.ApplicationName, io.Output)
-			io.ApplicationName = ui.SelectApplicationNameComp("delete")
+			io.ApplicationName = ui.SelectApplicationNameComp(ApplicationNameDeleteComponentMessage)
 		}
 	} else {
-		io.ApplicationName = ui.SelectApplicationNameComp("delete")
+		io.ApplicationName = ui.SelectApplicationNameComp(ApplicationNameDeleteComponentMessage)
 	}
 	ui.AppNameGiven = io.ApplicationName
 	presentComponents := ui.NumberOfComponents(filepath.Join(io.Output, io.ApplicationName, "components"))
