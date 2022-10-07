@@ -19,7 +19,8 @@ import (
 
 const (
 	// AddCompRecommendedCommandName the recommended command name
-	AddCompRecommendedCommandName = "add"
+	AddCompRecommendedCommandName      = "add"
+	ApplicationNameAddComponentMessage = "Provide the Application name to add a Component"
 )
 
 // AddCompParameters encapsulates the parameters for the kam pipelines init command.
@@ -133,15 +134,15 @@ func initiateInteractiveModeComponent(io *AddCompParameters, cmd *cobra.Command)
 		err := ui.ValidateName(io.ApplicationName)
 		if err != nil {
 			log.Progressf("%v", err)
-			io.ApplicationName = ui.SelectApplicationNameComp("add")
+			io.ApplicationName = ui.SelectApplicationNameComp(ApplicationNameAddComponentMessage)
 		}
 		exists, _ := ioutils.IsExisting(appFs, filepath.Join(io.Output, io.ApplicationName))
 		if !exists {
 			log.Progressf("the Application : %s doesn't exists in Path %s", io.ApplicationName, io.Output)
-			io.ApplicationName = ui.SelectApplicationNameComp("add")
+			io.ApplicationName = ui.SelectApplicationNameComp(ApplicationNameAddComponentMessage)
 		}
 	} else {
-		io.ApplicationName = ui.SelectApplicationNameComp("add")
+		io.ApplicationName = ui.SelectApplicationNameComp(ApplicationNameAddComponentMessage)
 	}
 	ui.AppNameGiven = io.ApplicationName
 

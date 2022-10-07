@@ -13,4 +13,5 @@ type GeneratorOptions struct {
 	Overwrite            bool //
 	SaveTokenKeyRing     bool
 	PrivateRepoURLDriver string //
+	EnvironmentName      string
 }
