@@ -13,14 +13,14 @@ func TestMissingFlagsDescribe(t *testing.T) {
 	}{
 		{
 			"Required flags are present",
-			map[string]string{"application-name": "value-1"},
+			map[string]string{"application-folder": "/user/app1"},
 			nil,
 		},
 
 		{
 			"A required flag is absent",
-			map[string]string{"application-name": ""},
-			missingFlagErr([]string{`"application-name"`}),
+			map[string]string{"application-folder": ""},
+			missingFlagErr([]string{`"application-folder"`}),
 		},
 	}
 	for _, test := range tests {

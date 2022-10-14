@@ -19,17 +19,16 @@ import (
 
 const (
 	DescribeRecommendedCommandName = "describe"
-	appliactionNameFlags           = "application-name"
+	appliactionFolderFlags         = "application-folder"
 )
 
 var (
 	describeExampleC = ktemplates.Examples(`
-    #
-		kam describe --output <path to write GitOps resources> --application-name <name of application>
+    # Describe the application
+		kam describe --application-folder <path to application>
 		
     %[1]s 
     `)
-
 	describeLongDescC  = ktemplates.LongDesc(`Describe Command`)
 	describeShortDescC = `Describes the details of the application `
 	appFS              = ioutils.NewFilesystem()
@@ -46,36 +45,24 @@ type DescribeParameters struct {
 }
 
 func nonInteractiveModeDescribe(io *DescribeParameters) error {
-	mandatoryFlags := map[string]string{appliactionNameFlags: io.ApplicationName}
+	mandatoryFlags := map[string]string{appliactionFolderFlags: io.ApplicationFolder}
 	if err := checkMandatoryFlagsDescribe(mandatoryFlags); err != nil {
 		return err
 	}
-	err := ui.ValidateName(io.ApplicationName)
-	if err != nil {
-		return err
-	}
-	if io.Output == "./" || io.Output == "." {
-		path, _ := os.Getwd()
-		io.Output = path
-	}
-	exists, _ := ioutils.IsExisting(appFS, io.Output)
+	exists, _ := ioutils.IsExisting(appFS, io.ApplicationFolder)
 	if !exists {
-		return fmt.Errorf("the given Path : %s  doesn't exists ", io.Output)
+		return fmt.Errorf("the given Path : %s  doesn't exists ", io.ApplicationFolder)
 	}
-	exists, _ = ioutils.IsExisting(appFS, filepath.Join(io.Output, io.ApplicationName))
+	exists, _ = ioutils.IsExisting(appFS, filepath.Join(io.ApplicationFolder, "components"))
 	if !exists {
-		return fmt.Errorf("the given Application: %s  doesn't exists in the Path: %s", io.ApplicationName, io.Output)
-	}
-	exists, _ = ioutils.IsExisting(appFS, filepath.Join(io.Output, io.ApplicationName, io.ComponentName))
-	if !exists {
-		return fmt.Errorf("the given Component: %s  doesn't exists in the Application: %s", io.ComponentName, io.ApplicationName)
+		return fmt.Errorf("the given Path : %s is not a correct path for an application ", io.ApplicationFolder)
 	}
 	return nil
 }
 
 func checkMandatoryFlagsDescribe(flags map[string]string) error {
 	missingFlags := []string{}
-	mandatoryFlags := []string{appliactionNameFlags}
+	mandatoryFlags := []string{appliactionFolderFlags}
 	for _, flag := range mandatoryFlags {
 		if flags[flag] == "" {
 			missingFlags = append(missingFlags, fmt.Sprintf("%q", flag))
@@ -86,7 +73,7 @@ func checkMandatoryFlagsDescribe(flags map[string]string) error {
 	}
 	return nil
 }
-func checkENv(path string) []string {
+func checkEnv(path string) []string {
 	var envList []string
 	exists, _ := ioutils.IsExisting(appFS, path)
 	if exists {
@@ -113,7 +100,7 @@ func listFiles(path string) map[string][]string {
 	for _, f := range files {
 		err = ui.ValidateName(f.Name())
 		if err == nil {
-			l := checkENv(filepath.Join(path, f.Name(), "overlays"))
+			l := checkEnv(filepath.Join(path, f.Name(), "overlays"))
 			printList[f.Name()] = l
 		}
 	}
@@ -128,7 +115,8 @@ func (io *DescribeParameters) Validate() error {
 }
 
 func (io *DescribeParameters) Run() error {
-	listComp := listFiles(filepath.Join(io.Output, io.ApplicationName, "components"))
+	listComp := listFiles(filepath.Join(io.ApplicationFolder, "components"))
+	logs.Progressf("Args %s", os.Args[0])
 	keys := []string{}
 	for k := range listComp {
 		keys = append(keys, k)
@@ -149,7 +137,6 @@ func (io *DescribeParameters) Run() error {
 	} else {
 		logs.Progressf("No component is present in your application")
 	}
-
 	return nil
 }
 
@@ -164,7 +151,6 @@ func NewCmdDescribe(name, fullName string) *cobra.Command {
 			genericclioptions.GenericRun(o, cmd, args)
 		},
 	}
-	descibeCmd.Flags().StringVar(&o.Output, "output", "./", "Path to write GitOps resources")
-	descibeCmd.Flags().StringVar(&o.ApplicationName, "application-name", "", "Provide a name of application")
+	descibeCmd.Flags().StringVar(&o.ApplicationFolder, "application-folder", "", "Provode the path to the application")
 	return descibeCmd
 }

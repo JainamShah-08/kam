@@ -13,8 +13,8 @@ kam describe [flags]
 ### Examples
 
 ```
-  #
-  kam describe --output <path to write GitOps resources> --application-name <name of application>
+  # Describe the application
+  kam describe --application-folder <path to application>
   
   kam describe
 ```
@@ -22,9 +22,8 @@ kam describe [flags]
 ### Options
 
 ```
-      --application-name string   Provide a name of application
-  -h, --help                      help for describe
-      --output string             Path to write GitOps resources (default "./")
+      --application-folder string   Provode the path to the application
+  -h, --help                        help for describe
 ```
 
 ### SEE ALSO
