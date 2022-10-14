@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	env "github.com/redhat-developer/kam/pkg/cmd/component/environment"
 	"log"
+
+	env "github.com/redhat-developer/kam/pkg/cmd/component/environment"
 
 	bootstrapnew "github.com/redhat-developer/kam/pkg/cmd/component"
 	"github.com/redhat-developer/kam/pkg/cmd/component/component"
@@ -40,6 +41,7 @@ func MakeRootCmd() *cobra.Command {
 		bootstrapnew.NewCmdBootstrapNew(bootstrapnew.BootstrapRecommendedCommandName, utility.GetFullName(fullName, bootstrapnew.BootstrapRecommendedCommandName)),
 		component.NewCmdComp(component.CompRecommendedCommandName, utility.GetFullName(fullName, component.CompRecommendedCommandName)),
 		env.NewCmdEnv(env.EnvRecommendedCommandName, utility.GetFullName(fullName, env.EnvRecommendedCommandName)),
+		bootstrapnew.NewCmdDescribe(bootstrapnew.DescribeRecommendedCommandName, utility.GetFullName(fullName, bootstrapnew.DescribeRecommendedCommandName)),
 	)
 	return rootCmd
 }

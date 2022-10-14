@@ -14,4 +14,5 @@ type GeneratorOptions struct {
 	SaveTokenKeyRing     bool
 	PrivateRepoURLDriver string //
 	EnvironmentName      string
+	ApplicationFolder    string
 }
