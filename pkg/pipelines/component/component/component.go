@@ -12,24 +12,14 @@ import (
 )
 
 func AddComponent(o *pipelines.GeneratorOptions, appFs afero.Afero) error {
-	componentSpec := v1alpha1.ComponentSpec{
-		Application:   o.ApplicationName,
-		ComponentName: o.ComponentName,
-		TargetPort:    o.TargetPort,
-		Route:         o.Route,
+	componentSpec := v1alpha1.GeneratorOptions{
+		Application: o.ApplicationName,
+		Name:        o.ComponentName,
+		TargetPort:  o.TargetPort,
+		Route:       o.Route,
+	}
 
-		Source: v1alpha1.ComponentSource{
-			ComponentSourceUnion: v1alpha1.ComponentSourceUnion{
-				GitSource: &v1alpha1.GitSource{
-					URL: "",
-				},
-			},
-		},
-	}
-	BootstrapNewVal := v1alpha1.Component{
-		Spec: componentSpec,
-	}
-	anyErr := gitops.GenerateAndPush(o.Output, "", BootstrapNewVal, gitops.NewCmdExecutor(), appFs, "main", false, "KAM cli", nil)
+	anyErr := gitops.GenerateAndPush(o.Output, "", componentSpec, gitops.NewCmdExecutor(), appFs, "main", false, "KAM cli")
 	if anyErr != nil {
 		return fmt.Errorf("failed to create the Component :%s in Application: %s: %w", o.ComponentName, o.ApplicationName, anyErr)
 	}
@@ -58,13 +48,8 @@ func (e CmdExecutor) Execute(baseDir, command string, args ...string) ([]byte, e
 	return output, err
 }
 
-func (e CmdExecutor) GenerateParentKustomize(fs afero.Afero, gitOpsFolder string) error {
-	return gitops.GenerateParentKustomize(fs, gitOpsFolder)
-}
-
 type Executor interface {
 	Execute(baseDir, command string, args ...string) ([]byte, error)
-	GenerateParentKustomize(fs afero.Afero, gitOpsFolder string) error
 }
 
 func removeAndPush(outputPath string, remote string, componentName string, e Executor, appFs afero.Afero, branch string, context string, doPush bool, doClone bool) error {
@@ -84,9 +69,6 @@ func removeAndPush(outputPath string, remote string, componentName string, e Exe
 	componentPath := filepath.Join(gitopsFolder, "components", componentName)
 	if out, err := e.Execute(repoPath, "rm", "-rf", componentPath); err != nil {
 		return fmt.Errorf("failed to delete %q folder in repository in %q %q: %s", componentPath, repoPath, string(out), err)
-	}
-	if err := e.GenerateParentKustomize(appFs, gitopsFolder); err != nil {
-		return fmt.Errorf("failed to re-generate the gitops resources in %q for component %q: %s", componentPath, componentName, err)
 	}
 
 	if doPush {
