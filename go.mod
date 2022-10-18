@@ -2,6 +2,8 @@ module github.com/redhat-developer/kam
 
 go 1.18
 
+replace github.com/redhat-developer/gitops-generator => /Users/jainamshah/go/src/github.com/redhat-developer/gitops-generator
+
 require (
 	github.com/code-ready/clicumber v0.0.0-20210201104241-cecb794bdf9a
 	github.com/cucumber/godog v0.9.0

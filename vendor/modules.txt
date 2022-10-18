@@ -328,11 +328,12 @@ github.com/prometheus/procfs/internal/util
 ## explicit; go 1.13
 github.com/prometheus/statsd_exporter/pkg/mapper
 github.com/prometheus/statsd_exporter/pkg/mapper/fsm
-# github.com/redhat-developer/gitops-generator v0.0.0-20220913191840-22af48e76023
+# github.com/redhat-developer/gitops-generator v0.0.0-20220913191840-22af48e76023 => /Users/jainamshah/go/src/github.com/redhat-developer/gitops-generator
 ## explicit; go 1.18
 github.com/redhat-developer/gitops-generator/api/v1alpha1
 github.com/redhat-developer/gitops-generator/pkg
 github.com/redhat-developer/gitops-generator/pkg/resources
+github.com/redhat-developer/gitops-generator/pkg/util
 github.com/redhat-developer/gitops-generator/pkg/yaml
 # github.com/russross/blackfriday v1.6.0
 ## explicit; go 1.13
@@ -931,5 +932,6 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
+# github.com/redhat-developer/gitops-generator => /Users/jainamshah/go/src/github.com/redhat-developer/gitops-generator
 # github.com/h2non/gock => gopkg.in/h2non/gock.v1 v1.0.14
 # github.com/antlr/antlr4 => github.com/antlr/antlr4 v0.0.0-20211106181442-e4c1a74c66bd
