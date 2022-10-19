@@ -14,19 +14,22 @@ import (
 // function to populate the GitSource struct
 func BootstrapNew(o *GeneratorOptions, appFs afero.Afero) error {
 
-	componentSpec := v1alpha1.GeneratorOptions{
+	genOptions := v1alpha1.GeneratorOptions{
 		Application: o.ApplicationName,
 		Name:        o.ComponentName,
 		Secret:      o.Secret,
 		TargetPort:  o.TargetPort,
 		Route:       o.Route,
+		GitSource: &v1alpha1.GitSource{
+			URL: o.GitRepoURL,
+		},
 	}
 
 	if ui.PathExists(appFs, filepath.Join(o.Output, o.ApplicationName)) && !o.Overwrite {
 		return fmt.Errorf("%v the application name already exists in given directory %v", o.ApplicationName, o.Output)
 	}
 	e := gitops.NewCmdExecutor()
-	anyErr := gitops.GenerateAndPush(o.Output, o.GitRepoURL, componentSpec, e, appFs, "main", o.PushToGit, "KAM cli")
+	anyErr := gitops.GenerateAndPush(o.Output, o.GitRepoURL, genOptions, e, appFs, "main", o.PushToGit, "KAM cli")
 	if anyErr != nil {
 		log.Progressf(o.GitRepoURL)
 		return fmt.Errorf("failed to create the gitops repository: %q: %w", o.GitRepoURL, anyErr)
