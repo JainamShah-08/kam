@@ -18,12 +18,11 @@ package gitops
 import (
 	"context"
 	"fmt"
+	"github.com/redhat-developer/gitops-generator/pkg/util"
 	"net/url"
 	"os/exec"
 	"path/filepath"
 	"strings"
-
-	"github.com/redhat-developer/gitops-generator/pkg/util"
 
 	"github.com/jenkins-x/go-scm/scm"
 	"github.com/jenkins-x/go-scm/scm/factory"
@@ -275,19 +274,7 @@ func GenerateOverlaysAndPush(outputPath string, clone bool, remote string, optio
 	return nil
 }
 
-// CloneRemoveComponentAndPush takes in the following args and updates the gitops resources by removing the given component
-// 1. outputPath: Where to output the gitops resources to
-// 2. remote: A string of the form https://$token@<domain>/<org>/<repo>, where <domain> is either github.com or gitlab.com and $token is optional. Corresponds to the component's gitops repository
-// 3. componentName: The component name corresponding to a single Component in an Application. eg. component.Name
-// 4. The executor to use to execute the git commands (either gitops.executor or gitops.mockExecutor)
-// 5. The filesystem object used to create (either ioutils.NewFilesystem() or ioutils.NewMemoryFilesystem())
-// 6. The branch to push to
-// 7. The path within the repository to generate the resources in
-func CloneRemoveComponentAndPush(outputPath string, remote string, componentName string, e Executor, appFs afero.Afero, branch string, context string) error {
-	return RemoveComponent(outputPath, remote, componentName, e, appFs, branch, context, true, true)
-}
-
-// RemoveComponent takes in the following args and updates the gitops resources by removing the given component
+// RemoveAndPush takes in the following args and updates the gitops resources by removing the given component
 // 1. outputPath: Where to output the gitops resources to
 // 2. remote: A string of the form https://$token@<domain>/<org>/<repo>, where <domain> is either github.com or gitlab.com and $token is optional. Corresponds to the component's gitops repository
 // 3. componentName: The component name corresponding to a single Component in an Application. eg. component.Name
@@ -296,24 +283,23 @@ func CloneRemoveComponentAndPush(outputPath string, remote string, componentName
 // 6. The branch to push to
 // 7. The path within the repository to generate the resources in
 // 8. Optionally push the changes to the repository
-func RemoveComponent(outputPath string, remote string, componentName string, e Executor, appFs afero.Afero, branch string, context string, doClone, doPush bool) error {
+func RemoveAndPush(outputPath string, remote string, componentName string, e Executor, appFs afero.Afero, branch string, context string, doPush bool) error {
 
 	invalidRemoteErr := util.ValidateRemote(remote)
 	if invalidRemoteErr != nil {
 		return invalidRemoteErr
 	}
 
+	if out, err := e.Execute(outputPath, "git", "clone", remote, componentName); err != nil {
+		return fmt.Errorf("failed to clone git repository in %q %q: %s", outputPath, string(out), err)
+	}
+
 	repoPath := filepath.Join(outputPath, componentName)
 
-	if doClone {
-		if out, err := e.Execute(outputPath, "git", "clone", remote, componentName); err != nil {
-			return fmt.Errorf("failed to clone git repository in %q %q: %s", outputPath, string(out), err)
-		}
-		// Checkout the specified branch
-		if _, err := e.Execute(repoPath, "git", "switch", branch); err != nil {
-			if out, err := e.Execute(repoPath, "git", "checkout", "-b", branch); err != nil {
-				return fmt.Errorf("failed to checkout branch %q in %q %q: %s", branch, repoPath, string(out), err)
-			}
+	// Checkout the specified branch
+	if _, err := e.Execute(repoPath, "git", "switch", branch); err != nil {
+		if out, err := e.Execute(repoPath, "git", "checkout", "-b", branch); err != nil {
+			return fmt.Errorf("failed to checkout branch %q in %q %q: %s", branch, repoPath, string(out), err)
 		}
 	}
 
