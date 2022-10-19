@@ -14,7 +14,7 @@ import (
 
 // AddEnv adds a new environment to the pipelines file.
 func AddEnv(o *component.GeneratorOptions, appFs afero.Afero) error {
-	bindingConfig := v1alpha1.GeneratorOptions{
+	genOptions := v1alpha1.GeneratorOptions{
 		Name:     o.ComponentName,
 		Replicas: 1,
 		Resources: corev1.ResourceRequirements{
@@ -27,7 +27,7 @@ func AddEnv(o *component.GeneratorOptions, appFs afero.Afero) error {
 	}
 
 	e := gitops.NewCmdExecutor()
-	anyErr := gitops.GenerateOverlaysAndPush(o.Output, false, "", bindingConfig, o.ApplicationName, o.EnvironmentName, "", "", e, appFs, "main", "", false, nil)
+	anyErr := gitops.GenerateOverlaysAndPush(o.Output, false, "", genOptions, o.ApplicationName, o.EnvironmentName, "", "", e, appFs, "main", "", false, nil)
 	if anyErr != nil {
 		return fmt.Errorf("failed to create the environment :%s in component: %s: %w", o.EnvironmentName, o.ComponentName, anyErr)
 	}

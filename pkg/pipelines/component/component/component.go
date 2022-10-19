@@ -12,14 +12,14 @@ import (
 )
 
 func AddComponent(o *pipelines.GeneratorOptions, appFs afero.Afero) error {
-	componentSpec := v1alpha1.GeneratorOptions{
+	genOptions := v1alpha1.GeneratorOptions{
 		Application: o.ApplicationName,
 		Name:        o.ComponentName,
 		TargetPort:  o.TargetPort,
 		Route:       o.Route,
 	}
 
-	anyErr := gitops.GenerateAndPush(o.Output, "", componentSpec, gitops.NewCmdExecutor(), appFs, "main", false, "KAM cli")
+	anyErr := gitops.GenerateAndPush(o.Output, "", genOptions, gitops.NewCmdExecutor(), appFs, "main", false, "KAM cli")
 	if anyErr != nil {
 		return fmt.Errorf("failed to create the Component :%s in Application: %s: %w", o.ComponentName, o.ApplicationName, anyErr)
 	}
