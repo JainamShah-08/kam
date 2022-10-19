@@ -17,7 +17,7 @@ require (
 	github.com/operator-framework/api v0.8.0
 	github.com/operator-framework/operator-lifecycle-manager v0.18.0
 	github.com/pkg/errors v0.9.1
-	github.com/redhat-developer/gitops-generator v0.0.0-20220913191840-22af48e76023
+	github.com/redhat-developer/gitops-generator v0.0.0-20221013224048-8f34bdc208b6
 	github.com/spf13/afero v1.8.0
 	github.com/spf13/cobra v1.4.0
 	github.com/tektoncd/pipeline v0.33.0
