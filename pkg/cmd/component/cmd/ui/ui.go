@@ -403,3 +403,40 @@ func AddEnvironmentName() string {
 	handleError(err)
 	return strings.TrimSpace(environmentName)
 }
+func ApplicationOutputPath() string {
+	var path string
+	prompt := &survey.Input{
+		Message: "Provide a Path to where the Application is located",
+		Help:    "This is the path where application configuration is stored locally before you push it to the repository GitRepoURL",
+	}
+	err := survey.AskOne(prompt, &path, validateAppPath())
+	handleError(err)
+	return strings.TrimSpace(path)
+}
+
+func validateAppPath() survey.Validator {
+	return func(input interface{}) error {
+		return validateAppFolder(input)
+	}
+}
+
+func validateAppFolder(input interface{}) error {
+	if u, ok := input.(string); ok {
+		exists, err := ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(u, "components"))
+		if !exists {
+			return fmt.Errorf("the given Path : %s doesn't exists in your directory", u)
+		}
+		handleError(err)
+	}
+	return nil
+}
+func CommitMessage() string {
+	var commitMesg string
+	prompt := &survey.Input{
+		Message: "Provide a message to push the changes ",
+		Help:    "Required Field",
+	}
+	err := survey.AskOne(prompt, &commitMesg, nil)
+	handleError(err)
+	return strings.TrimSpace(commitMesg)
+}
