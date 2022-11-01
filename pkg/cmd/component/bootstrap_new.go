@@ -32,7 +32,7 @@ const (
 var (
 	bootstrapExampleC = ktemplates.Examples(`
     # Bootstrap-New OpenShift pipelines.
-		kam bootstrap-new --git-repo-url https://github.com/<your organization>/gitops.git --application-name <name of application> --component-name <name of component> --secret <your git access token> --output <path to write GitOps resources> --push-to-git=true
+		kam bootstrap-new --git-repo-url <https://github.com/<your organization>/gitops.git --application-name <name of application> --component-name <name of component> --secret <your git access token> --output <path to write GitOps resources> --push-to-git=true
 		
     %[1]s 
     `)

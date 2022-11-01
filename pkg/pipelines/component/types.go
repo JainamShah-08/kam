@@ -15,4 +15,5 @@ type GeneratorOptions struct {
 	PrivateRepoURLDriver string //
 	EnvironmentName      string
 	ApplicationFolder    string
+	CommitMessage        string
 }

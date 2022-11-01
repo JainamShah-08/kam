@@ -250,7 +250,7 @@ func setAccessToken(io *BootstrapParameters) error {
 	if io.GitHostAccessToken != "" {
 		err := ui.ValidateAccessToken(io.GitHostAccessToken, io.ServiceRepoURL)
 		if err != nil {
-			return fmt.Errorf("Access token validation failed: %v", err)
+			return fmt.Errorf("access token validation failed: %v", err)
 		}
 	}
 	if io.SaveTokenKeyRing {
