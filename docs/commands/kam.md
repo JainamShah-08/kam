@@ -22,6 +22,8 @@ GitOps Application Manager (KAM) is a CLI tool to scaffold your GitOps repositor
 * [kam describe](kam_describe.md)	 - Describes the details of the application 
 * [kam env](kam_env.md)	 - Manage an environment in GitOps
 * [kam environment](kam_environment.md)	 - Manage an environment in GitOps
+* [kam init](kam_init.md)	 - Preform the Git init, branch and remote commands to intialialize the GitOps folder.
+* [kam push](kam_push.md)	 - Perform the Git add, commit and push commands for untracked changes.
 * [kam service](kam_service.md)	 - Manage services in an environment
 * [kam version](kam_version.md)	 - Print the version information
 * [kam webhook](kam_webhook.md)	 - Manage Git repository webhooks
