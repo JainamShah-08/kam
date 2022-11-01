@@ -42,8 +42,6 @@ func MakeRootCmd() *cobra.Command {
 		component.NewCmdComp(component.CompRecommendedCommandName, utility.GetFullName(fullName, component.CompRecommendedCommandName)),
 		env.NewCmdEnv(env.EnvRecommendedCommandName, utility.GetFullName(fullName, env.EnvRecommendedCommandName)),
 		bootstrapnew.NewCmdDescribe(bootstrapnew.DescribeRecommendedCommandName, utility.GetFullName(fullName, bootstrapnew.DescribeRecommendedCommandName)),
-		bootstrapnew.Init(bootstrapnew.InitRecommendedCommandName, utility.GetFullName(fullName, bootstrapnew.InitRecommendedCommandName)),
-		bootstrapnew.Push(bootstrapnew.PushRecommendedCommandName, utility.GetFullName(fullName, bootstrapnew.PushRecommendedCommandName)),
 	)
 	return rootCmd
 }
