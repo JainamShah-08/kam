@@ -1,6 +1,6 @@
 ## kam init
 
-Preform the Git init, branch and remote commands to intialialize the GitOps folder.
+Preform the Git init, branch and remote commands to initialize the GitOps folder.
 
 ### Synopsis
 
@@ -13,7 +13,7 @@ kam init [flags]
 ### Examples
 
 ```
-  # Init command to initialize git repository.
+  # Init command to initialize GitOps repository.
   kam init --application-folder <path to application> --git-repo-url <https://github.com/<your organization>/gitops.git --secret <your git access token>
   
   kam init
@@ -22,7 +22,7 @@ kam init [flags]
 ### Options
 
 ```
-      --application-folder string    Provode the path to the application
+      --application-folder string    Provide the path to the application folder
       --git-repo-url string          Provide the URL for your GitOps repository e.g. https://github.com/organisation/repository.git
   -h, --help                         help for init
       --interactive                  If true, enable prompting for most options if not already specified on the command line

@@ -2,12 +2,14 @@ package bootstrapnew
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/openshift/odo/pkg/log"
 	gitops "github.com/redhat-developer/gitops-generator/pkg"
 	"github.com/redhat-developer/kam/pkg/cmd/component/cmd/ui"
 	"github.com/redhat-developer/kam/pkg/cmd/genericclioptions"
 	pipelines "github.com/redhat-developer/kam/pkg/pipelines/component"
+	"github.com/redhat-developer/kam/pkg/pipelines/ioutils"
 	"github.com/spf13/cobra"
 	ktemplates "k8s.io/kubectl/pkg/util/templates"
 )
@@ -41,12 +43,23 @@ type PushParameters struct {
 	Interactive bool
 }
 
+func checkapplicationPush(path string) error {
+	exists, _ := ioutils.IsExisting(appFS, path)
+	if !exists {
+		return fmt.Errorf("the given Path : %s  doesn't exists ", path)
+	}
+	exists, _ = ioutils.IsExisting(appFS, filepath.Join(path, "components"))
+	if !exists {
+		return fmt.Errorf("the given Path : %s is not a correct path for an application ", path)
+	}
+	return nil
+}
 func nonInteractiveModePush(io *PushParameters) error {
 	mandatoryFlags := map[string]string{applicationFolderFlagsP: io.ApplicationFolder, commitMessage: io.CommitMessage}
 	if err := checkMandatoryFlagsDescribe(mandatoryFlags); err != nil {
 		return err
 	}
-	if err := checkApplicationPath(io.ApplicationFolder); err != nil {
+	if err := checkapplicationPush(io.ApplicationFolder); err != nil {
 		return err
 	}
 	if io.CommitMessage == "" {
@@ -59,7 +72,7 @@ func interactiveModePush(io *PushParameters) error {
 		io.ApplicationFolder = ui.ApplicationOutputPath()
 	}
 	if io.ApplicationFolder != "" {
-		err := checkApplicationPath(io.ApplicationFolder)
+		err := checkapplicationPush(io.ApplicationFolder)
 		if err != nil {
 			log.Progressf("%v", err)
 			io.ApplicationFolder = ui.ApplicationOutputPath()
@@ -82,7 +95,7 @@ func (io *PushParameters) Validate() error {
 }
 func (io *PushParameters) Run() error {
 
-	isGit := checkGit(io.ApplicationFolder)
+	isGit := checkGit(appFS, io.ApplicationFolder)
 
 	if !isGit {
 		return fmt.Errorf("no git repository has been initilaized to push")

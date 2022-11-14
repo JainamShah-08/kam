@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 	"sort"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/redhat-developer/kam/pkg/cmd/ui"
 	pipelines "github.com/redhat-developer/kam/pkg/pipelines/component"
 	"github.com/redhat-developer/kam/pkg/pipelines/ioutils"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	ktemplates "k8s.io/kubectl/pkg/util/templates"
 )
@@ -77,6 +77,7 @@ func checkEnv(path string) []string {
 	var envList []string
 	exists, _ := ioutils.IsExisting(appFS, path)
 	if exists {
+
 		files, _ := ioutil.ReadDir(path)
 		for _, f := range files {
 			err := ui.ValidateName(f.Name())
@@ -91,8 +92,9 @@ func checkEnv(path string) []string {
 	return envList
 }
 
-func listFiles(path string) map[string][]string {
-	files, err := ioutil.ReadDir(path)
+//Need to modify
+func ListFiles(appFSvar afero.Afero, path string) map[string][]string {
+	files, err := appFSvar.ReadDir(path)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -115,8 +117,7 @@ func (io *DescribeParameters) Validate() error {
 }
 
 func (io *DescribeParameters) Run() error {
-	listComp := listFiles(filepath.Join(io.ApplicationFolder, "components"))
-	logs.Progressf("Args %s", os.Args[0])
+	listComp := ListFiles(appFS, filepath.Join(io.ApplicationFolder, "components"))
 	keys := []string{}
 	for k := range listComp {
 		keys = append(keys, k)

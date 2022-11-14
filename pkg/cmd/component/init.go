@@ -3,7 +3,6 @@ package bootstrapnew
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -18,6 +17,7 @@ import (
 	"github.com/redhat-developer/kam/pkg/pipelines/accesstoken"
 	pipelines "github.com/redhat-developer/kam/pkg/pipelines/component"
 	"github.com/redhat-developer/kam/pkg/pipelines/ioutils"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/zalando/go-keyring"
 	ktemplates "k8s.io/kubectl/pkg/util/templates"
@@ -31,14 +31,14 @@ const (
 
 var (
 	initExample = ktemplates.Examples(`
-   # Init command to initialize git repository.
+   # Init command to initialize GitOps repository.
        kam init --application-folder <path to application> --git-repo-url <https://github.com/<your organization>/gitops.git --secret <your git access token>
       
    %[1]s
    `)
 
 	initLongDesc  = ktemplates.LongDesc(`Git intialize the GitOps repository.`)
-	initShortDesc = `Preform the Git init, branch and remote commands to intialialize the GitOps folder.`
+	initShortDesc = `Preform the Git init, branch and remote commands to initialize the GitOps folder.`
 )
 
 func NewInitParameters() *InitParameters {
@@ -52,14 +52,26 @@ type InitParameters struct {
 	Interactive bool
 }
 
-func checkApplicationPath(path string) error {
-	exists, _ := ioutils.IsExisting(appFS, path)
+// checks the application folder constraints for non interactive mode
+// if the application folder path is present then it check wether it is valid for application
+// if the folder path is not present check for valid application name to create it
+
+func CheckApplicationPath(app afero.Afero, path string) error {
+	exists, _ := ioutils.IsExisting(app, path)
 	if !exists {
-		return fmt.Errorf("the given Path : %s  doesn't exists ", path)
+		appName := strings.Split(path, "/")
+		err := ui.ValidateName(appName[len(appName)-1])
+		if err != nil {
+			return fmt.Errorf("failed to create the directory %s with application name %s : %v", path, appName[len(appName)-1], err)
+		}
+		app.MkdirAll(path, 0755)
 	}
-	exists, _ = ioutils.IsExisting(appFS, filepath.Join(path, "components"))
-	if !exists {
-		return fmt.Errorf("the given Path : %s is not a correct path for an application ", path)
+	subFiles := ListFiles(app, path)
+	if len(subFiles) != 0 {
+		exists, _ = ioutils.IsExisting(app, filepath.Join(path, "components"))
+		if !exists {
+			return fmt.Errorf("the given path %s is not the correct path for application", path)
+		}
 	}
 	return nil
 }
@@ -69,7 +81,7 @@ func nonInteractiveModeInit(io *InitParameters) error {
 		return err
 	}
 
-	if err := checkApplicationPath(io.ApplicationFolder); err != nil {
+	if err := CheckApplicationPath(appFS, io.ApplicationFolder); err != nil {
 		return err
 	}
 	if io.PrivateRepoURLDriver != "" {
@@ -77,7 +89,7 @@ func nonInteractiveModeInit(io *InitParameters) error {
 			return fmt.Errorf("invalid driver type: %q", io.PrivateRepoURLDriver)
 		}
 	}
-	if checkGit(io.ApplicationFolder) {
+	if checkGit(appFS, io.ApplicationFolder) {
 		return fmt.Errorf("git repository has already been initiated")
 	} else {
 		if io.GitRepoURL == "" {
@@ -85,7 +97,7 @@ func nonInteractiveModeInit(io *InitParameters) error {
 		} else {
 			_, err := url.Parse(io.GitRepoURL)
 			if err != nil {
-				return fmt.Errorf("failed to parse GitOps repo URL %q: %w", io.GitRepoURL, err)
+				return fmt.Errorf("failed to parse GitOps repo URL %q: %v", io.GitRepoURL, err)
 			}
 			err = setAccessTokenInit(io)
 			if err != nil {
@@ -109,22 +121,48 @@ func interactiveModeInit(io *InitParameters) error {
 	var url *url.URL
 	var err error
 	if io.ApplicationFolder != "" {
-		err := checkApplicationPath(io.ApplicationFolder)
-		if err != nil {
-			log.Progressf("%v", err)
-			io.ApplicationFolder = ui.ApplicationOutputPath()
+		//check wether the path exists and if not check the application-name
+		exists, _ := ioutils.IsExisting(appFS, io.ApplicationFolder)
+		if !exists {
+			appName := strings.Split(io.ApplicationFolder, "/")
+			err := ui.ValidateName(appName[len(appName)-1])
+			if err != nil {
+				log.Progressf("failed to create the directory %s with application name %s : %v", io.ApplicationFolder, appName[len(appName)-1], err)
+				io.ApplicationFolder = ui.ApplicationOutputPath()
+			}
+		} else {
+			listDir := ListFiles(appFS, io.ApplicationFolder)
+			if len(listDir) != 0 {
+				exists, _ = ioutils.IsExisting(appFS, filepath.Join(io.ApplicationFolder, "components"))
+				if !exists {
+					log.Progressf("the given Path : %s is not a correct path for an application ", io.ApplicationFolder)
+					io.ApplicationFolder = ui.ApplicationOutputPath()
+				}
+			}
 		}
+
 	}
 	if io.ApplicationFolder == "" {
 		io.ApplicationFolder = ui.ApplicationOutputPath()
 	}
-	if !checkGit(io.ApplicationFolder) {
+	// ask for confirmation before creating the directory
+	exists, _ := ioutils.IsExisting(appFS, io.ApplicationFolder)
+	if !exists {
+		check := ui.AskConfirmation(io.ApplicationFolder)
+		if check {
+			appFS.MkdirAll(io.ApplicationFolder, 0755)
+		} else {
+			return fmt.Errorf("interactive mode has been terminated")
+		}
+	}
+
+	if !checkGit(appFS, io.ApplicationFolder) {
 		if io.GitRepoURL == "" {
 			io.GitRepoURL = ui.EnterGitRepoURL()
 		}
 		url, err = url.Parse(io.GitRepoURL)
 		for err != nil {
-			log.Errorf("failed to parse GitOps repo URL %q: %w", io.GitRepoURL, err)
+			log.Progressf("failed to parse GitOps repo URL %q: %v", io.GitRepoURL, err)
 			io.GitRepoURL = ui.EnterGitRepoURL()
 			url, err = url.Parse(io.GitRepoURL)
 		}
@@ -133,7 +171,7 @@ func interactiveModeInit(io *InitParameters) error {
 			io.PrivateRepoURLDriver = ui.SelectPrivateRepoDriver()
 			host, err := accesstoken.HostFromURL(io.GitRepoURL)
 			if err != nil {
-				return fmt.Errorf("failed to parse the gitops url: %w", err)
+				return fmt.Errorf("failed to parse the gitops url: %v", err)
 			}
 			identifier := factory.NewDriverIdentifier(factory.Mapping(host, io.PrivateRepoURLDriver))
 			factory.DefaultIdentifier = identifier
@@ -152,9 +190,13 @@ func interactiveModeInit(io *InitParameters) error {
 			}
 		}
 		io.Secret = secret
+	} else {
+		return fmt.Errorf("git repo already been initiated")
 	}
 	return gitInitializeCheck(io)
 }
+
+// Checks the requirement for .git folder
 func gitInitializeCheck(io *InitParameters) error {
 	u, _ := url.Parse(io.GitRepoURL)
 	parts := strings.Split(u.Path, "/")
@@ -163,13 +205,12 @@ func gitInitializeCheck(io *InitParameters) error {
 	u.User = url.UserPassword("", io.Secret)
 	client, err := factory.FromRepoURL(u.String())
 	if err != nil {
-		return fmt.Errorf("failed to create a client to access %q: %w", io.GitRepoURL, err)
+		return fmt.Errorf("failed to create a client to access %q: %v", io.GitRepoURL, err)
 	}
 	ctx := context.Background()
 	currentUser, _, err := client.Users.Find(ctx)
 	if err != nil {
-		log.Errorf("%v", err)
-		return fmt.Errorf("failed to get the user with their auth token: %w", err)
+		return fmt.Errorf("failed to get the user with their auth token: %v", err)
 	}
 	if currentUser.Login == org {
 		org = ""
@@ -189,11 +230,13 @@ func gitInitializeCheck(io *InitParameters) error {
 		if _, resp, err := client.Repositories.Find(context.Background(), repo); err == nil && resp.Status == 200 {
 			return fmt.Errorf("failed to create repository, repo already exists")
 		}
-		return fmt.Errorf("failed to create repository %q in namespace %q: %w", repoName, org, err)
+		return fmt.Errorf("failed to create repository %q in namespace %q: %v", repoName, org, err)
 	}
 	return gitInitialize(io.ApplicationFolder, io.GitRepoURL)
 }
 
+// Generates the .git folder
+// Executes git init, git branch -m main and git remote add commands
 func gitInitialize(path string, repo string) error {
 	e := gitops.NewCmdExecutor()
 	if out, err := e.Execute(path, "git", "init", "."); err != nil {
@@ -208,17 +251,17 @@ func gitInitialize(path string, repo string) error {
 	nextStepsInit()
 	return nil
 }
-func checkGit(path string) bool {
-	files, _ := ioutil.ReadDir(path)
-	for _, f := range files {
-		if f.Name() == ".git" {
-			return true
-		}
+
+// check the pre existence of .git folder for application folder
+func checkGit(appFS afero.Afero, path string) bool {
+	exists, _ := ioutils.IsExisting(appFS, filepath.Join(path, ".git"))
+	if exists {
+		return exists
 	}
 	return false
 }
-func (io *InitParameters) Complete(name string, cmd *cobra.Command, args []string) error {
 
+func (io *InitParameters) Complete(name string, cmd *cobra.Command, args []string) error {
 	if cmd.Flags().NFlag() == 0 || io.Interactive {
 		return interactiveModeInit(io)
 	}
@@ -243,7 +286,7 @@ func Init(name, fullName string) *cobra.Command {
 			genericclioptions.GenericRun(o, cmd, args)
 		},
 	}
-	initCmd.Flags().StringVar(&o.ApplicationFolder, "application-folder", "", "Provode the path to the application")
+	initCmd.Flags().StringVar(&o.ApplicationFolder, "application-folder", "", "Provide the path to the application folder")
 	initCmd.Flags().BoolVar(&o.Interactive, "interactive", false, "If true, enable prompting for most options if not already specified on the command line")
 	initCmd.Flags().StringVar(&o.Secret, "secret", "", "Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.")
 	initCmd.Flags().StringVar(&o.GitRepoURL, "git-repo-url", "", "Provide the URL for your GitOps repository e.g. https://github.com/organisation/repository.git")
