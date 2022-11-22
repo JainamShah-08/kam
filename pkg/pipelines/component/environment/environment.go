@@ -26,8 +26,7 @@ func AddEnv(o *component.GeneratorOptions, appFs afero.Afero) error {
 		OverlayEnvVar: nil,
 	}
 
-	e := gitops.NewCmdExecutor()
-	anyErr := gitops.GenerateOverlaysAndPush(o.Output, false, "", genOptions, o.ApplicationName, o.EnvironmentName, "", "", e, appFs, "main", "", false, nil)
+	anyErr := gitops.NewGitopsGen().GenerateOverlaysAndPush(o.Output, false, "", genOptions, o.ApplicationName, o.EnvironmentName, "", "", appFs, "main", "", false, nil)
 	if anyErr != nil {
 		return fmt.Errorf("failed to create the environment :%s in component: %s: %w", o.EnvironmentName, o.ComponentName, anyErr)
 	}

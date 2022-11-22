@@ -28,8 +28,7 @@ func BootstrapNew(o *GeneratorOptions, appFs afero.Afero) error {
 	if ui.PathExists(appFs, filepath.Join(o.Output, o.ApplicationName)) && !o.Overwrite {
 		return fmt.Errorf("%v the application name already exists in given directory %v", o.ApplicationName, o.Output)
 	}
-	e := gitops.NewCmdExecutor()
-	anyErr := gitops.GenerateAndPush(o.Output, o.GitRepoURL, genOptions, e, appFs, "main", o.PushToGit, "KAM cli")
+	anyErr := gitops.NewGitopsGen().GenerateAndPush(o.Output, o.GitRepoURL, genOptions, appFs, "main", o.PushToGit, "KAM cli")
 	if anyErr != nil {
 		log.Progressf(o.GitRepoURL)
 		return fmt.Errorf("failed to create the gitops repository: %q: %w", o.GitRepoURL, anyErr)
