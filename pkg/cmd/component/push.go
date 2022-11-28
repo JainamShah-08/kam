@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 
 	"github.com/openshift/odo/pkg/log"
-	gitops "github.com/redhat-developer/gitops-generator/pkg"
 	"github.com/redhat-developer/kam/pkg/cmd/component/cmd/ui"
 	"github.com/redhat-developer/kam/pkg/cmd/genericclioptions"
 	pipelines "github.com/redhat-developer/kam/pkg/pipelines/component"
@@ -17,7 +16,6 @@ import (
 
 const (
 	PushRecommendedCommandName = "push"
-	applicationFolderFlagsP    = "application-folder"
 )
 
 var (
@@ -55,7 +53,7 @@ func checkapplicationPush(app afero.Afero, path string) error {
 	return nil
 }
 func nonInteractiveModePush(io *PushParameters) error {
-	mandatoryFlags := map[string]string{applicationFolderFlagsP: io.ApplicationFolder, commitMessageFlag: io.CommitMessage}
+	mandatoryFlags := map[string]string{applicationFolderFlag: io.ApplicationFolder, commitMessageFlag: io.CommitMessage}
 	if err := CheckMandatoryFlags(mandatoryFlags); err != nil {
 		return err
 	}
@@ -100,7 +98,7 @@ func (io *PushParameters) Run() error {
 	if !isGit {
 		return fmt.Errorf("no git repository has been initilaized to push")
 	} else {
-		e := gitops.NewCmdExecutor()
+		e := NewCmdExecutor()
 		if out, err := e.Execute(io.ApplicationFolder, "git", "add", "."); err != nil {
 			return fmt.Errorf("failed to add components to repository in %q %q: %s", io.ApplicationFolder, string(out), err)
 		}

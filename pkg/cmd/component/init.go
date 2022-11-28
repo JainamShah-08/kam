@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/jenkins-x/go-scm/scm"
 	"github.com/jenkins-x/go-scm/scm/factory"
 	"github.com/openshift/odo/pkg/log"
-	gitops "github.com/redhat-developer/gitops-generator/pkg"
 	"github.com/redhat-developer/kam/pkg/cmd/component/cmd/ui"
 	"github.com/redhat-developer/kam/pkg/cmd/genericclioptions"
 	"github.com/redhat-developer/kam/pkg/cmd/utility"
@@ -179,7 +179,8 @@ func interactiveModeInit(io *InitParameters) error {
 		if err != nil && err != keyring.ErrNotFound {
 			return err
 		}
-		if secret == "" { // We must prompt for the token
+		if secret == "" {
+			// We must prompt for the token
 			if io.Secret == "" {
 				io.Secret = ui.EnterGitSecret(io.GitRepoURL)
 				io.SaveTokenKeyRing = ui.UseKeyringRingSvc()
@@ -237,7 +238,7 @@ func gitInitializeCheck(io *InitParameters) error {
 // Generates the .git folder
 // Executes git init, git branch -m main and git remote add commands
 func gitInitialize(path string, repo string) error {
-	e := gitops.NewCmdExecutor()
+	e := NewCmdExecutor()
 	if out, err := e.Execute(path, "git", "init", "."); err != nil {
 		return fmt.Errorf("failed to initialize git repository in %q %q: %s", path, string(out), err)
 	}
@@ -313,4 +314,20 @@ func nextStepsInit() {
 	log.Success("Successfully created the git repository\n\n",
 		"\n",
 	)
+}
+func NewCmdExecutor() CmdExecutor {
+	return CmdExecutor{}
+}
+
+type CmdExecutor struct {
+}
+type Executor interface {
+	Execute(baseDir, command string, args ...string) ([]byte, error)
+}
+
+func (e CmdExecutor) Execute(baseDir, command string, args ...string) ([]byte, error) {
+	c := exec.Command(command, args...)
+	c.Dir = baseDir
+	output, err := c.CombinedOutput()
+	return output, err
 }

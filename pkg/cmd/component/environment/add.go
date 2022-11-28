@@ -10,6 +10,7 @@ import (
 
 	"github.com/openshift/odo/pkg/log"
 	"github.com/redhat-developer/kam/pkg/cmd/genericclioptions"
+
 	component "github.com/redhat-developer/kam/pkg/pipelines/component"
 	hpipelines "github.com/redhat-developer/kam/pkg/pipelines/component"
 	env "github.com/redhat-developer/kam/pkg/pipelines/component/environment"

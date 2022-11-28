@@ -26,7 +26,7 @@ const (
 	BootstrapRecommendedCommandName = "bootstrap-new"
 
 	componentNameFlag     = "component-name"
-	appliactionNameFlag   = "application-name"
+	applicationNameFlag   = "application-name"
 	gitRepoURLFlag        = "git-repo-url"
 	secretFlag            = "secret"
 	applicationFolderFlag = "application-folder"
@@ -106,7 +106,7 @@ func addGitURLSuffixIfNecessary(io *BootstrapNewParameters) {
 
 // nonInteractiveMode gets triggered if a flag is passed, checks for mandatory flags.
 func nonInteractiveModeBootstrapNew(io *BootstrapNewParameters) error {
-	mandatoryFlags := map[string]string{componentNameFlag: io.ComponentName, appliactionNameFlag: io.ApplicationName, gitRepoURLFlag: io.GitRepoURL, secretFlag: io.Secret}
+	mandatoryFlags := map[string]string{componentNameFlag: io.ComponentName, applicationNameFlag: io.ApplicationName, gitRepoURLFlag: io.GitRepoURL, secretFlag: io.Secret}
 	if err := CheckMandatoryFlags(mandatoryFlags); err != nil {
 		return err
 	}
@@ -141,7 +141,6 @@ func nonInteractiveModeBootstrapNew(io *BootstrapNewParameters) error {
 func CheckMandatoryFlags(flags map[string]string) error {
 	missingFlags := []string{}
 	mandatoryFlags := []string{}
-	//componentNameFlag, appliactionNameFlag, gitRepoURLFlag, secretFlag
 	for k := range flags {
 		mandatoryFlags = append(mandatoryFlags, k)
 	}

@@ -1,6 +1,7 @@
 package bootstrapnew
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/redhat-developer/kam/pkg/pipelines/ioutils"
@@ -47,16 +48,15 @@ func Test_checkApplicationPath(t *testing.T) {
 	dir2 := "/app2"
 	dir1 := "/app1"
 
-	// dir3Full := "/app3/apps/components"
-	// dir3 := "/app3"
-	// appFSTest.MkdirAll(dir3Full, 0755)
-
+	dir3Full := "/app3/apps/components"
+	dir3 := "/app3"
+	appFSTest.MkdirAll(dir3Full, 0755)
 	tests := []struct {
 		name    string
 		args    string
 		wantErr error
 	}{
-		// TODO: Add test cases.
+
 		{
 			"Present",
 			dir1,
@@ -67,11 +67,21 @@ func Test_checkApplicationPath(t *testing.T) {
 			dir2,
 			nil,
 		},
+		{
+			"Present but not correct",
+			dir3,
+			fmt.Errorf("the given path /app3 is not the correct path for application"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := CheckApplicationPath(appFSTest, tt.args); got != tt.wantErr {
+			got := CheckApplicationPath(appFSTest, tt.args)
+			if got == nil && tt.wantErr != nil {
 				t.Errorf("CheckApplicationPath() = %v, want %v", got, tt.wantErr)
+			} else {
+				if got != nil && got.Error() != tt.wantErr.Error() {
+					t.Errorf("CheckApplicationPath() = %v, want %v", got, tt.wantErr)
+				}
 			}
 
 		})

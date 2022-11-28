@@ -468,7 +468,7 @@ func CommitMessage() string {
 	return strings.TrimSpace(commitMesg)
 }
 func ListFiles(path string) []string {
-	files, err := ioutil.ReadDir(path)
+	files, err := ioutils.NewFilesystem().ReadDir(path)
 	if err != nil {
 		log.Fatal(err)
 	}
