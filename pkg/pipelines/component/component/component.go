@@ -19,7 +19,7 @@ func AddComponent(o *pipelines.GeneratorOptions, appFs afero.Afero) error {
 		Route:       o.Route,
 	}
 
-	anyErr := gitops.GenerateAndPush(o.Output, "", genOptions, gitops.NewCmdExecutor(), appFs, "main", false, "KAM cli")
+	anyErr := gitops.NewGitopsGen().GenerateAndPush(o.Output, "", genOptions, appFs, "main", false, "KAM cli")
 	if anyErr != nil {
 		return fmt.Errorf("failed to create the Component :%s in Application: %s: %w", o.ComponentName, o.ApplicationName, anyErr)
 	}
@@ -27,7 +27,7 @@ func AddComponent(o *pipelines.GeneratorOptions, appFs afero.Afero) error {
 }
 
 func DeleteComponent(o *pipelines.GeneratorOptions, appFs afero.Afero) error {
-	anyErr := removeAndPush(filepath.Join(o.Output, o.ApplicationName), "", o.ComponentName, gitops.NewCmdExecutor(), appFs, "main", "", false, false)
+	anyErr := removeAndPush(filepath.Join(o.Output, o.ApplicationName), "", o.ComponentName, NewCmdExecutor(), appFs, "main", "", false, false)
 	if anyErr != nil {
 		return fmt.Errorf("failed to delete the Component :%s in Application: %s: %w", o.ComponentName, o.ApplicationName, anyErr)
 	}
@@ -72,7 +72,7 @@ func removeAndPush(outputPath string, remote string, componentName string, e Exe
 	}
 
 	if doPush {
-		return gitops.CommitAndPush(outputPath, "", remote, componentName, e, branch, fmt.Sprintf("Removed component %s", componentName))
+		return gitops.NewGitopsGen().CommitAndPush(outputPath, "", remote, componentName, branch, fmt.Sprintf("Removed component %s", componentName))
 	}
 
 	return nil

@@ -45,7 +45,7 @@ func TestAddAndDeleteComponent(t *testing.T) {
 		}
 		err = DeleteComponent(o, fs)
 		if err != nil {
-			t.Errorf("DeleteComponent() faced unexpected error%v", err)
+			t.Errorf("DeleteComponent() faced unexpected error %v", err)
 		}
 		exists, _ = fs.Exists(filepath.Join(tt.output, tt.applicationName, "components", tt.componentName))
 		if exists {
