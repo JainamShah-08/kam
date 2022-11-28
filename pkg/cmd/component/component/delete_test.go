@@ -1,6 +1,10 @@
 package component
 
-import "testing"
+import (
+	"testing"
+
+	bootstrapnew "github.com/redhat-developer/kam/pkg/cmd/component"
+)
 
 // Test case for checking the input flags.
 func TestMissingFlagsComponentDelete(t *testing.T) {
@@ -27,12 +31,12 @@ func TestMissingFlagsComponentDelete(t *testing.T) {
 		{
 			"Multiple required flags are absent",
 			map[string]string{"component-name": "", "application-name": ""},
-			missingFlagErr([]string{`"component-name"`, `"application-name"`}),
+			missingFlagErr([]string{`"application-name"`, `"component-name"`}),
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			gotErr := checkMandatoryFlags(test.flags)
+			gotErr := bootstrapnew.CheckMandatoryFlags(test.flags)
 			if gotErr != nil && test.err != nil {
 				if gotErr.Error() != test.err.Error() {
 					t.Fatalf("error mismatch: got %v, want %v", gotErr, test.err)

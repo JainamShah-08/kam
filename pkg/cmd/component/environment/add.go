@@ -2,10 +2,11 @@ package env
 
 import (
 	"fmt"
-	"github.com/redhat-developer/kam/pkg/cmd/component/cmd/ui"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/redhat-developer/kam/pkg/cmd/component/cmd/ui"
 
 	"github.com/openshift/odo/pkg/log"
 	"github.com/redhat-developer/kam/pkg/cmd/genericclioptions"

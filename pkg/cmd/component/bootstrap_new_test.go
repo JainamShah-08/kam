@@ -71,12 +71,12 @@ func TestMissingFlagsBootstrapNew(t *testing.T) {
 		{
 			"Multiple required flags are absent",
 			map[string]string{"component-name": "", "application-name": "", "git-repo-url": "", "secret": ""},
-			missingFlagErr([]string{`"component-name"`, `"application-name"`, `"git-repo-url"`, `"secret"`}),
+			missingFlagErr([]string{`"application-name"`, `"component-name"`, `"git-repo-url"`, `"secret"`}),
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			gotErr := checkMandatoryFlags(test.flags)
+			gotErr := CheckMandatoryFlags(test.flags)
 			if gotErr != nil && test.err != nil {
 				if gotErr.Error() != test.err.Error() {
 					t.Fatalf("error mismatch: got %v, want %v", gotErr, test.err)

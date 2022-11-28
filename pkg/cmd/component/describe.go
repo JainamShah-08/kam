@@ -2,7 +2,6 @@ package bootstrapnew
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"path/filepath"
 	"sort"
@@ -46,7 +45,7 @@ type DescribeParameters struct {
 
 func nonInteractiveModeDescribe(io *DescribeParameters) error {
 	mandatoryFlags := map[string]string{appliactionFolderFlags: io.ApplicationFolder}
-	if err := checkMandatoryFlagsDescribe(mandatoryFlags); err != nil {
+	if err := CheckMandatoryFlags(mandatoryFlags); err != nil {
 		return err
 	}
 	exists, _ := ioutils.IsExisting(appFS, io.ApplicationFolder)
@@ -60,25 +59,15 @@ func nonInteractiveModeDescribe(io *DescribeParameters) error {
 	return nil
 }
 
-func checkMandatoryFlagsDescribe(flags map[string]string) error {
-	missingFlags := []string{}
-	mandatoryFlags := []string{appliactionFolderFlags}
-	for _, flag := range mandatoryFlags {
-		if flags[flag] == "" {
-			missingFlags = append(missingFlags, fmt.Sprintf("%q", flag))
-		}
-	}
-	if len(missingFlags) > 0 {
-		return missingFlagErr(missingFlags)
-	}
-	return nil
-}
-func checkEnv(path string) []string {
-	var envList []string
-	exists, _ := ioutils.IsExisting(appFS, path)
-	if exists {
+// func DummyFalgCheck()error{
 
-		files, _ := ioutil.ReadDir(path)
+// }
+
+func checkEnv(currentFileSystem afero.Afero, path string) []string {
+	var envList []string
+	exists, _ := ioutils.IsExisting(currentFileSystem, path)
+	if exists {
+		files, _ := currentFileSystem.ReadDir(path)
 		for _, f := range files {
 			err := ui.ValidateName(f.Name())
 			if err == nil {
@@ -102,7 +91,7 @@ func ListFiles(appFSvar afero.Afero, path string) map[string][]string {
 	for _, f := range files {
 		err = ui.ValidateName(f.Name())
 		if err == nil {
-			l := checkEnv(filepath.Join(path, f.Name(), "overlays"))
+			l := checkEnv(appFS, filepath.Join(path, f.Name(), "overlays"))
 			printList[f.Name()] = l
 		}
 	}

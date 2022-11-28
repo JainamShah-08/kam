@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/jenkins-x/go-scm/scm/factory"
@@ -23,10 +24,13 @@ import (
 //testing changes
 const (
 	BootstrapRecommendedCommandName = "bootstrap-new"
-	componentNameFlag               = "component-name"
-	appliactionNameFlag             = "application-name"
-	gitRepoURLFlag                  = "git-repo-url"
-	secretFlag                      = "secret"
+
+	componentNameFlag     = "component-name"
+	appliactionNameFlag   = "application-name"
+	gitRepoURLFlag        = "git-repo-url"
+	secretFlag            = "secret"
+	applicationFolderFlag = "application-folder"
+	commitMessageFlag     = "commit-message"
 )
 
 var (
@@ -103,7 +107,7 @@ func addGitURLSuffixIfNecessary(io *BootstrapNewParameters) {
 // nonInteractiveMode gets triggered if a flag is passed, checks for mandatory flags.
 func nonInteractiveModeBootstrapNew(io *BootstrapNewParameters) error {
 	mandatoryFlags := map[string]string{componentNameFlag: io.ComponentName, appliactionNameFlag: io.ApplicationName, gitRepoURLFlag: io.GitRepoURL, secretFlag: io.Secret}
-	if err := checkMandatoryFlags(mandatoryFlags); err != nil {
+	if err := CheckMandatoryFlags(mandatoryFlags); err != nil {
 		return err
 	}
 	err := ui.ValidateTargetPort(io.TargetPort)
@@ -134,9 +138,14 @@ func nonInteractiveModeBootstrapNew(io *BootstrapNewParameters) error {
 }
 
 // Checking the mandatory flags & reusing missingFlagErr in Bootstrap.go
-func checkMandatoryFlags(flags map[string]string) error {
+func CheckMandatoryFlags(flags map[string]string) error {
 	missingFlags := []string{}
-	mandatoryFlags := []string{componentNameFlag, appliactionNameFlag, gitRepoURLFlag, secretFlag}
+	mandatoryFlags := []string{}
+	//componentNameFlag, appliactionNameFlag, gitRepoURLFlag, secretFlag
+	for k := range flags {
+		mandatoryFlags = append(mandatoryFlags, k)
+	}
+	sort.Strings(mandatoryFlags)
 	for _, flag := range mandatoryFlags {
 		if flags[flag] == "" {
 			missingFlags = append(missingFlags, fmt.Sprintf("%q", flag))

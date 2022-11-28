@@ -10,6 +10,7 @@ import (
 	"github.com/redhat-developer/kam/pkg/cmd/genericclioptions"
 	pipelines "github.com/redhat-developer/kam/pkg/pipelines/component"
 	"github.com/redhat-developer/kam/pkg/pipelines/ioutils"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	ktemplates "k8s.io/kubectl/pkg/util/templates"
 )
@@ -17,7 +18,6 @@ import (
 const (
 	PushRecommendedCommandName = "push"
 	applicationFolderFlagsP    = "application-folder"
-	commitMessage              = "commit-message"
 )
 
 var (
@@ -43,23 +43,23 @@ type PushParameters struct {
 	Interactive bool
 }
 
-func checkapplicationPush(path string) error {
-	exists, _ := ioutils.IsExisting(appFS, path)
+func checkapplicationPush(app afero.Afero, path string) error {
+	exists, _ := ioutils.IsExisting(app, path)
 	if !exists {
 		return fmt.Errorf("the given Path : %s  doesn't exists ", path)
 	}
-	exists, _ = ioutils.IsExisting(appFS, filepath.Join(path, "components"))
+	exists, _ = ioutils.IsExisting(app, filepath.Join(path, "components"))
 	if !exists {
 		return fmt.Errorf("the given Path : %s is not a correct path for an application ", path)
 	}
 	return nil
 }
 func nonInteractiveModePush(io *PushParameters) error {
-	mandatoryFlags := map[string]string{applicationFolderFlagsP: io.ApplicationFolder, commitMessage: io.CommitMessage}
-	if err := checkMandatoryFlagsDescribe(mandatoryFlags); err != nil {
+	mandatoryFlags := map[string]string{applicationFolderFlagsP: io.ApplicationFolder, commitMessageFlag: io.CommitMessage}
+	if err := CheckMandatoryFlags(mandatoryFlags); err != nil {
 		return err
 	}
-	if err := checkapplicationPush(io.ApplicationFolder); err != nil {
+	if err := checkapplicationPush(appFS, io.ApplicationFolder); err != nil {
 		return err
 	}
 	if io.CommitMessage == "" {
@@ -72,7 +72,7 @@ func interactiveModePush(io *PushParameters) error {
 		io.ApplicationFolder = ui.ApplicationOutputPath()
 	}
 	if io.ApplicationFolder != "" {
-		err := checkapplicationPush(io.ApplicationFolder)
+		err := checkapplicationPush(appFS, io.ApplicationFolder)
 		if err != nil {
 			log.Progressf("%v", err)
 			io.ApplicationFolder = ui.ApplicationOutputPath()

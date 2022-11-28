@@ -26,7 +26,6 @@ import (
 const (
 	InitRecommendedCommandName = "init"
 	defaultRepoDescription     = "Bootstrapped GitOps Repository based on Components"
-	applicationFolderFlag      = "application-folder"
 )
 
 var (
@@ -77,7 +76,7 @@ func CheckApplicationPath(app afero.Afero, path string) error {
 }
 func nonInteractiveModeInit(io *InitParameters) error {
 	passedFlags := map[string]string{appliactionFolderFlags: io.ApplicationFolder}
-	if err := checkMandatoryFlagsDescribe(passedFlags); err != nil {
+	if err := CheckMandatoryFlags(passedFlags); err != nil {
 		return err
 	}
 
