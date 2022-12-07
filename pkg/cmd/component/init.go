@@ -37,7 +37,7 @@ var (
    `)
 
 	initLongDesc  = ktemplates.LongDesc(`Git intialize the GitOps repository.`)
-	initShortDesc = `Preform the Git init, branch and remote commands to initialize the GitOps folder.`
+	initShortDesc = `Perform the Git init, branch and remote commands to initialize the GitOps folder.`
 )
 
 func NewInitParameters() *InitParameters {
@@ -181,15 +181,15 @@ func interactiveModeInit(io *InitParameters) error {
 		}
 		if secret == "" {
 			// We must prompt for the token
-			if io.Secret == "" {
-				io.Secret = ui.EnterGitSecret(io.GitRepoURL)
+			if io.Token == "" {
+				io.Token = ui.EnterGitSecret(io.GitRepoURL)
 				io.SaveTokenKeyRing = ui.UseKeyringRingSvc()
 				if io.SaveTokenKeyRing {
 					setAccessTokenInit(io)
 				}
 			}
 		}
-		io.Secret = secret
+
 	} else {
 		return fmt.Errorf("git repo already been initiated")
 	}
@@ -202,7 +202,7 @@ func gitInitializeCheck(io *InitParameters) error {
 	parts := strings.Split(u.Path, "/")
 	org := parts[1]
 	repoName := strings.TrimSuffix(strings.Join(parts[2:], "/"), ".git")
-	u.User = url.UserPassword("", io.Secret)
+	u.User = url.UserPassword("", io.Token)
 	client, err := factory.FromRepoURL(u.String())
 	if err != nil {
 		return fmt.Errorf("failed to create a client to access %q: %v", io.GitRepoURL, err)
@@ -288,24 +288,24 @@ func Init(name, fullName string) *cobra.Command {
 	}
 	initCmd.Flags().StringVar(&o.ApplicationFolder, "application-folder", "", "Provide the path to the application folder")
 	initCmd.Flags().BoolVar(&o.Interactive, "interactive", false, "If true, enable prompting for most options if not already specified on the command line")
-	initCmd.Flags().StringVar(&o.Secret, "secret", "", "Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.")
+	initCmd.Flags().StringVar(&o.Token, "token", "", "Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.")
 	initCmd.Flags().StringVar(&o.GitRepoURL, "git-repo-url", "", "Provide the URL for your GitOps repository e.g. https://github.com/organisation/repository.git")
 	initCmd.Flags().StringVar(&o.PrivateRepoURLDriver, "private-repo-driver", "", "If your Git repositories are on a custom domain, please indicate which driver to use github or gitlab")
 	return initCmd
 }
 func setAccessTokenInit(io *InitParameters) error {
 	if io.SaveTokenKeyRing {
-		err := accesstoken.SetAccessToken(io.GitRepoURL, io.Secret)
+		err := accesstoken.SetAccessToken(io.GitRepoURL, io.Token)
 		if err != nil {
 			return err
 		}
 	}
-	if io.Secret == "" {
+	if io.Token == "" {
 		secret, err := accesstoken.GetAccessToken(io.GitRepoURL)
 		if err != nil {
 			return fmt.Errorf("unable to use access-token from keyring/env-var: %v, please pass a valid token to --git-host-access-token", err)
 		}
-		io.Secret = secret
+		io.Token = secret
 	}
 
 	return nil

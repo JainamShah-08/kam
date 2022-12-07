@@ -1,6 +1,6 @@
 ## kam init
 
-Preform the Git init, branch and remote commands to initialize the GitOps folder.
+Perform the Git init, branch and remote commands to initialize the GitOps folder.
 
 ### Synopsis
 
@@ -27,7 +27,7 @@ kam init [flags]
   -h, --help                         help for init
       --interactive                  If true, enable prompting for most options if not already specified on the command line
       --private-repo-driver string   If your Git repositories are on a custom domain, please indicate which driver to use github or gitlab
-      --secret string                Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.
+      --token string                 Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.
 ```
 
 ### SEE ALSO

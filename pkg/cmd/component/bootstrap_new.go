@@ -106,7 +106,7 @@ func addGitURLSuffixIfNecessary(io *BootstrapNewParameters) {
 
 // nonInteractiveMode gets triggered if a flag is passed, checks for mandatory flags.
 func nonInteractiveModeBootstrapNew(io *BootstrapNewParameters) error {
-	mandatoryFlags := map[string]string{componentNameFlag: io.ComponentName, applicationNameFlag: io.ApplicationName, gitRepoURLFlag: io.GitRepoURL, secretFlag: io.Secret}
+	mandatoryFlags := map[string]string{componentNameFlag: io.ComponentName, applicationNameFlag: io.ApplicationName, gitRepoURLFlag: io.GitRepoURL, secretFlag: io.Token}
 	if err := CheckMandatoryFlags(mandatoryFlags); err != nil {
 		return err
 	}
@@ -206,15 +206,15 @@ func initiateInteractiveModeForBootstrapNewCommand(io *BootstrapNewParameters, c
 		return err
 	}
 	if secret == "" { // We must prompt for the token
-		if io.Secret == "" {
-			io.Secret = ui.EnterGitSecret(io.GitRepoURL)
+		if io.Token == "" {
+			io.Token = ui.EnterGitSecret(io.GitRepoURL)
 		}
 		if !cmd.Flag("save-token-keyring").Changed {
 			io.SaveTokenKeyRing = ui.UseKeyringRingSvc()
 		}
 		setAccessToken(io)
 	} else {
-		io.Secret = secret
+		io.Token = secret
 	}
 
 	//Optional flags
@@ -246,17 +246,17 @@ func initiateInteractiveModeForBootstrapNewCommand(io *BootstrapNewParameters, c
 
 func setAccessToken(io *BootstrapNewParameters) error {
 	if io.SaveTokenKeyRing {
-		err := accesstoken.SetAccessToken(io.GitRepoURL, io.Secret)
+		err := accesstoken.SetAccessToken(io.GitRepoURL, io.Token)
 		if err != nil {
 			return err
 		}
 	}
-	if io.Secret == "" {
+	if io.Token == "" {
 		secret, err := accesstoken.GetAccessToken(io.GitRepoURL)
 		if err != nil {
 			return fmt.Errorf("unable to use access-token from keyring/env-var: %v, please pass a valid token to --git-host-access-token", err)
 		}
-		io.Secret = secret
+		io.Token = secret
 	}
 	return nil
 }
@@ -279,8 +279,8 @@ func (io *BootstrapNewParameters) Validate() error {
 		}
 	}
 
-	if io.SaveTokenKeyRing && io.Secret == "" {
-		return errors.New("--secret is required if --save-token-keyring is enabled")
+	if io.SaveTokenKeyRing && io.Token == "" {
+		return errors.New("--Token is required if --save-token-keyring is enabled")
 	}
 	return nil
 }
@@ -315,7 +315,7 @@ func NewCmdBootstrapNew(name, fullName string) *cobra.Command {
 	bootstrapCmd.Flags().StringVar(&o.Output, "output", ".", "Path to write GitOps resources")
 	bootstrapCmd.Flags().StringVar(&o.ComponentName, "component-name", "", "Provide a Component Name within the Application")
 	bootstrapCmd.Flags().StringVar(&o.ApplicationName, "application-name", "", "Provide a name for your Application")
-	bootstrapCmd.Flags().StringVar(&o.Secret, "secret", "", "Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.")
+	bootstrapCmd.Flags().StringVar(&o.Token, "token", "", "Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.")
 	bootstrapCmd.Flags().StringVar(&o.GitRepoURL, "git-repo-url", "", "Provide the URL for your GitOps repository e.g. https://github.com/organisation/repository.git")
 	bootstrapCmd.Flags().StringVar(&o.NameSpace, "namespace", "openshift-gitops", "this is a name-space options")
 	bootstrapCmd.Flags().IntVar(&o.TargetPort, "target-port", 8080, "Provide the Target Port for your application's component")

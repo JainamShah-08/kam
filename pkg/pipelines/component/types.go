@@ -4,7 +4,7 @@ type GeneratorOptions struct {
 	Output               string //
 	ComponentName        string //
 	ApplicationName      string //
-	Secret               string //
+	Token                string //
 	GitRepoURL           string //
 	NameSpace            string //
 	TargetPort           int    //

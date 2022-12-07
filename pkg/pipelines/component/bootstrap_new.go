@@ -17,7 +17,7 @@ func BootstrapNew(o *GeneratorOptions, appFs afero.Afero) error {
 	genOptions := v1alpha1.GeneratorOptions{
 		Application: o.ApplicationName,
 		Name:        o.ComponentName,
-		Secret:      o.Secret,
+		Secret:      o.Token,
 		TargetPort:  o.TargetPort,
 		Route:       o.Route,
 		GitSource: &v1alpha1.GitSource{
