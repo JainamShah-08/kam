@@ -109,6 +109,7 @@ func (io *PushParameters) Run() error {
 			return fmt.Errorf("failed push remote to repository %q %q: %s", io.ApplicationFolder, string(out), err)
 		}
 	}
+	nextStepsPush()
 	return nil
 }
 func Push(name, fullName string) *cobra.Command {
@@ -122,8 +123,13 @@ func Push(name, fullName string) *cobra.Command {
 			genericclioptions.GenericRun(o, cmd, args)
 		},
 	}
-	pushCmd.Flags().StringVar(&o.ApplicationFolder, "application-folder", "", "Provode the path to the application")
-	pushCmd.Flags().StringVar(&o.CommitMessage, "commit-message", "", "Provode a message to commit changes to repository")
+	pushCmd.Flags().StringVar(&o.ApplicationFolder, "application-folder", "", "Provide the path to the application")
+	pushCmd.Flags().StringVar(&o.CommitMessage, "commit-message", "", "Provide a message to commit changes to repository")
 	pushCmd.Flags().BoolVar(&o.Interactive, "interactive", false, "If true, enable prompting for most options if not already specified on the command line")
 	return pushCmd
+}
+func nextStepsPush() {
+	log.Success("Successfully pushed the git repository\n\n",
+		"\n",
+	)
 }

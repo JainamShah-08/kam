@@ -22,8 +22,8 @@ kam push [flags]
 ### Options
 
 ```
-      --application-folder string   Provode the path to the application
-      --commit-message string       Provode a message to commit changes to repository
+      --application-folder string   Provide the path to the application
+      --commit-message string       Provide a message to commit changes to repository
   -h, --help                        help for push
       --interactive                 If true, enable prompting for most options if not already specified on the command line
 ```

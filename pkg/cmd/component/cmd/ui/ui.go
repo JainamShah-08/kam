@@ -61,7 +61,7 @@ func PathExists(appFs afero.Fs, path string) bool {
 }
 
 // Not validating the token
-func EnterGitSecret(repoURL string) string {
+func EnterGitToken(repoURL string) string {
 	var gitWebhookSecret string
 	prompt := &survey.Password{
 		Message: fmt.Sprintf("Provide a token used to authenticate requests to %s", repoURL),
@@ -406,8 +406,8 @@ func AddEnvironmentName() string {
 func ApplicationOutputPath() string {
 	var path string
 	prompt := &survey.Input{
-		Message: "Provide a path to application folder",
-		Help:    "This is the path where application configuration is stored locally before you push it to the repository GitRepoURL",
+		Message: "Provide a path to the application folder",
+		Help:    "This is the path where the GitOps configuration is stored locally before you push it to the repository GitRepoURL",
 	}
 	err := survey.AskOne(prompt, &path, validateAppPath())
 	handleError(err)
@@ -460,7 +460,7 @@ func AskConfirmation(path string) bool {
 func CommitMessage() string {
 	var commitMesg string
 	prompt := &survey.Input{
-		Message: "Provide a message to push the changes ",
+		Message: "Provide a commit message to push the changes ",
 		Help:    "Required Field",
 	}
 	err := survey.AskOne(prompt, &commitMesg, nil)

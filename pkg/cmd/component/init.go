@@ -182,7 +182,7 @@ func interactiveModeInit(io *InitParameters) error {
 		if secret == "" {
 			// We must prompt for the token
 			if io.Token == "" {
-				io.Token = ui.EnterGitSecret(io.GitRepoURL)
+				io.Token = ui.EnterGitToken(io.GitRepoURL)
 				io.SaveTokenKeyRing = ui.UseKeyringRingSvc()
 				if io.SaveTokenKeyRing {
 					setAccessTokenInit(io)

@@ -28,7 +28,7 @@ const (
 	componentNameFlag     = "component-name"
 	applicationNameFlag   = "application-name"
 	gitRepoURLFlag        = "git-repo-url"
-	secretFlag            = "secret"
+	secretFlag            = "token"
 	applicationFolderFlag = "application-folder"
 	commitMessageFlag     = "commit-message"
 )
@@ -200,14 +200,14 @@ func initiateInteractiveModeForBootstrapNewCommand(io *BootstrapNewParameters, c
 	}
 	// We are checking if any existing token is present.
 	//If not we ask the uer to pass the token.
-	//EnterGitSecret is just validating length for now.
+	//EnterGitToken is just validating length for now.
 	secret, err := accesstoken.GetAccessToken(io.GitRepoURL)
 	if err != nil && err != keyring.ErrNotFound {
 		return err
 	}
 	if secret == "" { // We must prompt for the token
 		if io.Token == "" {
-			io.Token = ui.EnterGitSecret(io.GitRepoURL)
+			io.Token = ui.EnterGitToken(io.GitRepoURL)
 		}
 		if !cmd.Flag("save-token-keyring").Changed {
 			io.SaveTokenKeyRing = ui.UseKeyringRingSvc()

@@ -22,7 +22,7 @@ kam describe [flags]
 ### Options
 
 ```
-      --application-folder string   Provode the path to the application
+      --application-folder string   Provide the path to the application
   -h, --help                        help for describe
 ```
 

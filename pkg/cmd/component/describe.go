@@ -81,7 +81,6 @@ func checkEnv(currentFileSystem afero.Afero, path string) []string {
 	return envList
 }
 
-//Need to modify
 func ListFiles(appFSvar afero.Afero, path string) map[string][]string {
 	files, err := appFSvar.ReadDir(path)
 	if err != nil {
@@ -141,6 +140,6 @@ func NewCmdDescribe(name, fullName string) *cobra.Command {
 			genericclioptions.GenericRun(o, cmd, args)
 		},
 	}
-	descibeCmd.Flags().StringVar(&o.ApplicationFolder, "application-folder", "", "Provode the path to the application")
+	descibeCmd.Flags().StringVar(&o.ApplicationFolder, "application-folder", "", "Provide the path to the application")
 	return descibeCmd
 }
