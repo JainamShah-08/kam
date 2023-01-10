@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/jenkins-x/go-scm/scm/factory"
@@ -23,10 +24,13 @@ import (
 //testing changes
 const (
 	BootstrapRecommendedCommandName = "bootstrap-new"
-	componentNameFlag               = "component-name"
-	appliactionNameFlag             = "application-name"
-	gitRepoURLFlag                  = "git-repo-url"
-	secretFlag                      = "secret"
+
+	componentNameFlag     = "component-name"
+	applicationNameFlag   = "application-name"
+	gitRepoURLFlag        = "git-repo-url"
+	secretFlag            = "token"
+	applicationFolderFlag = "application-folder"
+	commitMessageFlag     = "commit-message"
 )
 
 var (
@@ -102,8 +106,8 @@ func addGitURLSuffixIfNecessary(io *BootstrapNewParameters) {
 
 // nonInteractiveMode gets triggered if a flag is passed, checks for mandatory flags.
 func nonInteractiveModeBootstrapNew(io *BootstrapNewParameters) error {
-	mandatoryFlags := map[string]string{componentNameFlag: io.ComponentName, appliactionNameFlag: io.ApplicationName, gitRepoURLFlag: io.GitRepoURL, secretFlag: io.Secret}
-	if err := checkMandatoryFlags(mandatoryFlags); err != nil {
+	mandatoryFlags := map[string]string{componentNameFlag: io.ComponentName, applicationNameFlag: io.ApplicationName, gitRepoURLFlag: io.GitRepoURL, secretFlag: io.Token}
+	if err := CheckMandatoryFlags(mandatoryFlags); err != nil {
 		return err
 	}
 	err := ui.ValidateTargetPort(io.TargetPort)
@@ -134,9 +138,13 @@ func nonInteractiveModeBootstrapNew(io *BootstrapNewParameters) error {
 }
 
 // Checking the mandatory flags & reusing missingFlagErr in Bootstrap.go
-func checkMandatoryFlags(flags map[string]string) error {
+func CheckMandatoryFlags(flags map[string]string) error {
 	missingFlags := []string{}
-	mandatoryFlags := []string{componentNameFlag, appliactionNameFlag, gitRepoURLFlag, secretFlag}
+	mandatoryFlags := []string{}
+	for k := range flags {
+		mandatoryFlags = append(mandatoryFlags, k)
+	}
+	sort.Strings(mandatoryFlags)
 	for _, flag := range mandatoryFlags {
 		if flags[flag] == "" {
 			missingFlags = append(missingFlags, fmt.Sprintf("%q", flag))
@@ -192,21 +200,21 @@ func initiateInteractiveModeForBootstrapNewCommand(io *BootstrapNewParameters, c
 	}
 	// We are checking if any existing token is present.
 	//If not we ask the uer to pass the token.
-	//EnterGitSecret is just validating length for now.
+	//EnterGitToken is just validating length for now.
 	secret, err := accesstoken.GetAccessToken(io.GitRepoURL)
 	if err != nil && err != keyring.ErrNotFound {
 		return err
 	}
 	if secret == "" { // We must prompt for the token
-		if io.Secret == "" {
-			io.Secret = ui.EnterGitSecret(io.GitRepoURL)
+		if io.Token == "" {
+			io.Token = ui.EnterGitToken(io.GitRepoURL)
 		}
 		if !cmd.Flag("save-token-keyring").Changed {
 			io.SaveTokenKeyRing = ui.UseKeyringRingSvc()
 		}
 		setAccessToken(io)
 	} else {
-		io.Secret = secret
+		io.Token = secret
 	}
 
 	//Optional flags
@@ -238,17 +246,17 @@ func initiateInteractiveModeForBootstrapNewCommand(io *BootstrapNewParameters, c
 
 func setAccessToken(io *BootstrapNewParameters) error {
 	if io.SaveTokenKeyRing {
-		err := accesstoken.SetAccessToken(io.GitRepoURL, io.Secret)
+		err := accesstoken.SetAccessToken(io.GitRepoURL, io.Token)
 		if err != nil {
 			return err
 		}
 	}
-	if io.Secret == "" {
+	if io.Token == "" {
 		secret, err := accesstoken.GetAccessToken(io.GitRepoURL)
 		if err != nil {
 			return fmt.Errorf("unable to use access-token from keyring/env-var: %v, please pass a valid token to --git-host-access-token", err)
 		}
-		io.Secret = secret
+		io.Token = secret
 	}
 	return nil
 }
@@ -271,8 +279,8 @@ func (io *BootstrapNewParameters) Validate() error {
 		}
 	}
 
-	if io.SaveTokenKeyRing && io.Secret == "" {
-		return errors.New("--secret is required if --save-token-keyring is enabled")
+	if io.SaveTokenKeyRing && io.Token == "" {
+		return errors.New("--Token is required if --save-token-keyring is enabled")
 	}
 	return nil
 }
@@ -307,7 +315,7 @@ func NewCmdBootstrapNew(name, fullName string) *cobra.Command {
 	bootstrapCmd.Flags().StringVar(&o.Output, "output", ".", "Path to write GitOps resources")
 	bootstrapCmd.Flags().StringVar(&o.ComponentName, "component-name", "", "Provide a Component Name within the Application")
 	bootstrapCmd.Flags().StringVar(&o.ApplicationName, "application-name", "", "Provide a name for your Application")
-	bootstrapCmd.Flags().StringVar(&o.Secret, "secret", "", "Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.")
+	bootstrapCmd.Flags().StringVar(&o.Token, "token", "", "Used to authenticate repository clones. Access token is encrypted and stored on local file system by keyring, will be updated/reused.")
 	bootstrapCmd.Flags().StringVar(&o.GitRepoURL, "git-repo-url", "", "Provide the URL for your GitOps repository e.g. https://github.com/organisation/repository.git")
 	bootstrapCmd.Flags().StringVar(&o.NameSpace, "namespace", "openshift-gitops", "this is a name-space options")
 	bootstrapCmd.Flags().IntVar(&o.TargetPort, "target-port", 8080, "Provide the Target Port for your application's component")

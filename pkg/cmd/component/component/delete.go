@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/openshift/odo/pkg/log"
+	bootstrapnew "github.com/redhat-developer/kam/pkg/cmd/component"
 	"github.com/redhat-developer/kam/pkg/cmd/component/cmd/ui"
 	"github.com/redhat-developer/kam/pkg/cmd/genericclioptions"
 	hpipelines "github.com/redhat-developer/kam/pkg/pipelines/component"
@@ -49,7 +50,7 @@ func (io *DeleteCompParameters) Complete(name string, cmd *cobra.Command, args [
 // checkMandatoryFlags is a function to check mandatory flags - defined in add.go
 func initiateNonInteractiveModeDeleteComponent(io *DeleteCompParameters) error {
 	mandatoryFlags := map[string]string{componentNameFlag: io.ComponentName, applicationNameFlag: io.ApplicationName}
-	if err := checkMandatoryFlags(mandatoryFlags); err != nil {
+	if err := bootstrapnew.CheckMandatoryFlags(mandatoryFlags); err != nil {
 		return err
 	}
 	err := ui.ValidateName(io.ApplicationName)

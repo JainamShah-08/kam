@@ -8,6 +8,7 @@ import (
 
 	"github.com/openshift/odo/pkg/log"
 
+	bootstrapnew "github.com/redhat-developer/kam/pkg/cmd/component"
 	"github.com/redhat-developer/kam/pkg/cmd/component/cmd/ui"
 	"github.com/redhat-developer/kam/pkg/cmd/genericclioptions"
 	hpipelines "github.com/redhat-developer/kam/pkg/pipelines/component"
@@ -57,28 +58,13 @@ func (io *AddCompParameters) Complete(name string, cmd *cobra.Command, args []st
 	return initiateNonInteractiveModeComponent(io)
 }
 
-// Checking the mandatory flags & reusing missingFlagErr in .go
-func checkMandatoryFlags(flags map[string]string) error {
-	missingFlags := []string{}
-	mandatoryFlags := []string{componentNameFlag, applicationNameFlag}
-	for _, flag := range mandatoryFlags {
-		if flags[flag] == "" {
-			missingFlags = append(missingFlags, fmt.Sprintf("%q", flag))
-		}
-	}
-	if len(missingFlags) > 0 {
-		return missingFlagErr(missingFlags)
-	}
-	return nil
-}
-
 func missingFlagErr(flags []string) error {
 	return fmt.Errorf("required flag(s) %s not set", strings.Join(flags, ", "))
 }
 
 func initiateNonInteractiveModeComponent(io *AddCompParameters) error {
 	mandatoryFlags := map[string]string{componentNameFlag: io.ComponentName, applicationNameFlag: io.ApplicationName}
-	if err := checkMandatoryFlags(mandatoryFlags); err != nil {
+	if err := bootstrapnew.CheckMandatoryFlags(mandatoryFlags); err != nil {
 		return err
 	}
 	err := ui.ValidateName(io.ApplicationName)

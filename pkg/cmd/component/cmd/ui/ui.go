@@ -61,7 +61,7 @@ func PathExists(appFs afero.Fs, path string) bool {
 }
 
 // Not validating the token
-func EnterGitSecret(repoURL string) string {
+func EnterGitToken(repoURL string) string {
 	var gitWebhookSecret string
 	prompt := &survey.Password{
 		Message: fmt.Sprintf("Provide a token used to authenticate requests to %s", repoURL),
@@ -401,4 +401,82 @@ func AddEnvironmentName() string {
 	err := survey.AskOne(prompt, &environmentName, validateEnvironmentNameAndPath())
 	handleError(err)
 	return strings.TrimSpace(environmentName)
+}
+func ApplicationOutputPath() string {
+	var path string
+	prompt := &survey.Input{
+		Message: "Provide a path to the application folder",
+		Help:    "This is the path where the GitOps configuration is stored locally before you push it to the repository GitRepoURL",
+	}
+	err := survey.AskOne(prompt, &path, validateAppPath())
+	handleError(err)
+	return strings.TrimSpace(path)
+}
+
+func validateAppPath() survey.Validator {
+	return func(input interface{}) error {
+		return validateAppFolder(input)
+	}
+}
+
+func validateAppFolder(input interface{}) error {
+	if u, ok := input.(string); ok {
+		exists, _ := ioutils.IsExisting(ioutils.NewFilesystem(), u)
+		if !exists {
+			appName := strings.Split(u, "/")
+			err := ValidateName(appName[len(appName)-1])
+			if err != nil {
+				err := fmt.Errorf(err.Error())
+				return (err)
+			}
+
+		} else {
+			l := ListFiles(u)
+			if len(l) != 0 {
+				exists, _ = ioutils.IsExisting(ioutils.NewFilesystem(), filepath.Join(u, "components"))
+				if !exists {
+					err := fmt.Errorf("the given Path : %s is not a correct path for an application ", u)
+					return (err)
+				}
+
+			}
+		}
+
+	}
+	return nil
+}
+func AskConfirmation(path string) bool {
+	var confirm string
+	prompt := &survey.Select{
+		Message: "Do you want to create the given directory:" + path + " ?",
+		Help:    "Select yes to create the directory",
+		Options: []string{"yes", "no"},
+		Default: "yes",
+	}
+	handleError(survey.AskOne(prompt, &confirm, nil))
+	return confirm == "yes"
+}
+func CommitMessage() string {
+	var commitMesg string
+	prompt := &survey.Input{
+		Message: "Provide a commit message to push the changes ",
+		Help:    "Required Field",
+	}
+	err := survey.AskOne(prompt, &commitMesg, nil)
+	handleError(err)
+	return strings.TrimSpace(commitMesg)
+}
+func ListFiles(path string) []string {
+	files, err := ioutils.NewFilesystem().ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	printList := []string{}
+	for _, f := range files {
+		err = ValidateName(f.Name())
+		if err == nil {
+			printList = append(printList, f.Name())
+		}
+	}
+	return printList
 }

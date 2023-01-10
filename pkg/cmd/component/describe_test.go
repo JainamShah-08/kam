@@ -25,7 +25,7 @@ func TestMissingFlagsDescribe(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
-			gotErr := checkMandatoryFlagsDescribe(test.flags)
+			gotErr := CheckMandatoryFlags(test.flags)
 			if gotErr != nil && test.err != nil {
 				if gotErr.Error() != test.err.Error() {
 					t.Fatalf("error mismatch: got %v, want %v", gotErr, test.err)

@@ -2,9 +2,7 @@ package bootstrapnew
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 	"sort"
 
@@ -13,6 +11,7 @@ import (
 	"github.com/redhat-developer/kam/pkg/cmd/ui"
 	pipelines "github.com/redhat-developer/kam/pkg/pipelines/component"
 	"github.com/redhat-developer/kam/pkg/pipelines/ioutils"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	ktemplates "k8s.io/kubectl/pkg/util/templates"
 )
@@ -46,7 +45,7 @@ type DescribeParameters struct {
 
 func nonInteractiveModeDescribe(io *DescribeParameters) error {
 	mandatoryFlags := map[string]string{appliactionFolderFlags: io.ApplicationFolder}
-	if err := checkMandatoryFlagsDescribe(mandatoryFlags); err != nil {
+	if err := CheckMandatoryFlags(mandatoryFlags); err != nil {
 		return err
 	}
 	exists, _ := ioutils.IsExisting(appFS, io.ApplicationFolder)
@@ -60,24 +59,15 @@ func nonInteractiveModeDescribe(io *DescribeParameters) error {
 	return nil
 }
 
-func checkMandatoryFlagsDescribe(flags map[string]string) error {
-	missingFlags := []string{}
-	mandatoryFlags := []string{appliactionFolderFlags}
-	for _, flag := range mandatoryFlags {
-		if flags[flag] == "" {
-			missingFlags = append(missingFlags, fmt.Sprintf("%q", flag))
-		}
-	}
-	if len(missingFlags) > 0 {
-		return missingFlagErr(missingFlags)
-	}
-	return nil
-}
-func checkEnv(path string) []string {
+// func DummyFalgCheck()error{
+
+// }
+
+func checkEnv(currentFileSystem afero.Afero, path string) []string {
 	var envList []string
-	exists, _ := ioutils.IsExisting(appFS, path)
+	exists, _ := ioutils.IsExisting(currentFileSystem, path)
 	if exists {
-		files, _ := ioutil.ReadDir(path)
+		files, _ := currentFileSystem.ReadDir(path)
 		for _, f := range files {
 			err := ui.ValidateName(f.Name())
 			if err == nil {
@@ -91,8 +81,8 @@ func checkEnv(path string) []string {
 	return envList
 }
 
-func listFiles(path string) map[string][]string {
-	files, err := ioutil.ReadDir(path)
+func ListFiles(appFSvar afero.Afero, path string) map[string][]string {
+	files, err := appFSvar.ReadDir(path)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -100,7 +90,7 @@ func listFiles(path string) map[string][]string {
 	for _, f := range files {
 		err = ui.ValidateName(f.Name())
 		if err == nil {
-			l := checkEnv(filepath.Join(path, f.Name(), "overlays"))
+			l := checkEnv(appFS, filepath.Join(path, f.Name(), "overlays"))
 			printList[f.Name()] = l
 		}
 	}
@@ -115,8 +105,7 @@ func (io *DescribeParameters) Validate() error {
 }
 
 func (io *DescribeParameters) Run() error {
-	listComp := listFiles(filepath.Join(io.ApplicationFolder, "components"))
-	logs.Progressf("Args %s", os.Args[0])
+	listComp := ListFiles(appFS, filepath.Join(io.ApplicationFolder, "components"))
 	keys := []string{}
 	for k := range listComp {
 		keys = append(keys, k)
@@ -151,6 +140,6 @@ func NewCmdDescribe(name, fullName string) *cobra.Command {
 			genericclioptions.GenericRun(o, cmd, args)
 		},
 	}
-	descibeCmd.Flags().StringVar(&o.ApplicationFolder, "application-folder", "", "Provode the path to the application")
+	descibeCmd.Flags().StringVar(&o.ApplicationFolder, "application-folder", "", "Provide the path to the application")
 	return descibeCmd
 }
